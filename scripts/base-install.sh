@@ -242,7 +242,7 @@ spinner() {
     local delay=0.5
     while true; do
         for dot_count in "" "." ".." "..."; do
-            echo -ne "\r${BLUE}Installing Agent OS files${dot_count}${NC}   "
+            echo -ne "\r${BLUE}Installing QA Agent OS files${dot_count}${NC}   "
             sleep $delay
         done
     done
@@ -614,7 +614,7 @@ perform_fresh_installation() {
     fi
 
     echo ""
-    print_success "Agent OS has been successfully installed!"
+    print_success "QA Agent OS has been successfully installed!"
     echo ""
     echo -e "${GREEN}Next steps:${NC}"
     echo ""
@@ -623,10 +623,10 @@ perform_fresh_installation() {
     echo -e "${GREEN}2) Navigate to a project directory${NC}"
     echo -e "   ${YELLOW}cd path/to/project-directory${NC}"
     echo ""
-    echo -e "${GREEN}3) Install Agent OS in your project by running:${NC}"
+    echo -e "${GREEN}3) Install QA Agent OS in your project by running:${NC}"
     echo -e "   ${YELLOW}~/qa-agent-os/scripts/project-install.sh${NC}"
     echo ""
-    echo -e "${GREEN}Visit the docs for guides on how to use Agent OS: https://buildermethods.com/qa-agent-os${NC}"
+    echo -e "${GREEN}Visit the docs for guides on how to use QA Agent OS ${NC}"
     echo ""
 }
 
@@ -662,7 +662,7 @@ DRY_RUN=false
 # -----------------------------------------------------------------------------
 
 main() {
-    print_section "Agent OS Base Installation"
+    print_section "QA Agent OS Base Installation"
 
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do

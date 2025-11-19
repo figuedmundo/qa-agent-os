@@ -70,8 +70,10 @@ The user performs a one-time installation of the core `qa-agent-os` system onto 
 
 ```bash
 # User runs the installation command
-curl -sSL https://raw.githubusercontent.com/Edmundo-Figueroa/qa-agent-os/main/scripts/base-install.sh | bash
+curl -sSL https://raw.githubusercontent.com/figuedmundo/qa-agent-os/main/scripts/base-install.sh | bash
 ```
+
+> QA Agent OS installs into `~/qa-agent-os` and happily coexists with the developer-focused `agent-os` that installs into `~/agent-os`. Keep both if you split time between QA and dev work; each product ships its own scripts and commands.
 
 **Step 2: Project Installation**
 For every company project they work on, the user navigates into that project's directory and runs the `project-install.sh` script.

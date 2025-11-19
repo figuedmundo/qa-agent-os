@@ -1,43 +1,25 @@
-# Bug Reporting Standard
+# Bug Reporting Quick Reference
 
-High-quality bug reports reduce back-and-forth and speed up fixes. Follow this template.
+Use this abbreviated checklist when raising a defect, then verify it meets the full requirements in `bugs/bug-reporting-standard.md`.
 
-## Bug Report Template
+## 1. Capture Context
+- Title in `[Component] <Issue>` format
+- Tracker ID, build/version, environment, feature flags
+- Severity + priority rationale
 
-### Title
-`[Component] Short Description of the Issue`
+## 2. Document Reproduction
+1. Preconditions
+2. Numbered steps (include data used)
+3. Expected vs. actual results
+4. Reproducibility rate (Always / Intermittent with % or counts)
 
-### Description
-Detailed explanation of what went wrong.
+## 3. Attach Evidence
+- Logs and console output wrapped in code blocks
+- Screenshot/video with annotations
+- Observability IDs (request ID, trace ID, metric snapshot)
+- Link to `/artifacts/YYYY-MM-DD/bug-<id>` folder
 
-### Severity
-- **Blocker**: System unusable.
-- **Critical**: Major feature broken, no workaround.
-- **Major**: Major feature broken, workaround exists.
-- **Minor**: Minor annoyance, cosmetic.
-
-### Priority
-- **P1**: Fix immediately.
-- **P2**: Fix in current sprint.
-- **P3**: Fix in next sprint.
-- **P4**: Backlog.
-
-### Environment
-- **OS**: (e.g., macOS, Windows)
-- **Browser**: (e.g., Chrome 120)
-- **Environment**: (e.g., Staging, Dev, Prod)
-
-### Steps to Reproduce
-1. Go to...
-2. Do...
-3. Observe...
-
-### Expected Result
-What *should* have happened?
-
-### Actual Result
-What *actually* happened?
-
-### Evidence
-- **Logs**: (Paste relevant snippets or attach file)
-- **Screenshots/Video**: (Attach or link)
+## 4. Triage Handoff
+- Add root-cause hypothesis or suspected area
+- Tag owners, components, and related requirements/tests
+- Update status as soon as triage decisions are made

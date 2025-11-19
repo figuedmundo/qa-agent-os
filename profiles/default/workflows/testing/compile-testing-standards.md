@@ -4,13 +4,15 @@ Use the following logic to compile a list of file references to standards that s
 
 ##### Steps to Compile Standards List
 
-<!-- 1. Find the current task group in `orchestration.yml`
+[AI the part below was part of original agent-os project , please read , analise if is needed in qa-agent-os]
+
+1. Find the current task group in `orchestration.yml`
 2. Check the list of `standards` specified for this task group in `orchestration.yml`
 3. Compile the list of file references to those standards, one file reference per line, using this logic for determining which files to include:
    a. If the value for `standards` is simply `all`, then include every single file, folder, sub-folder and files within sub-folders in your list of files.
    b. If the item under standards ends with "*" then it means that all files within this folder or sub-folder should be included. For example, `frontend/*` means include all files and sub-folders and their files located inside of `agent-os/standards/frontend/`.
    c. If a file ends in `.md` then it means this is one specific file you must include in your list of files. For example `backend/api.md` means you must include the file located at `agent-os/standards/backend/api.md`.
-   d. De-duplicate files in your list of file references. -->
+   d. De-duplicate files in your list of file references.
 
    Please AI help to understand this part and if we need to include in testing stadards
 

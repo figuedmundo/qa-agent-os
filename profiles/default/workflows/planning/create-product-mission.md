@@ -1,4 +1,4 @@
-Create `agent-os/product/mission.md` with comprehensive product definition following this structure for its' content:
+Create `qa-agent-os/product/mission.md` with comprehensive product definition following this structure for its' content:
 
 #### Mission Structure:
 ```markdown
@@ -44,6 +44,28 @@ This results in [MEASURABLE_BENEFIT].
 
 ### Advanced Features
 - **[FEATURE_NAME]:** [USER_BENEFIT_DESCRIPTION]
+
+## Product Areas & Team Ownership
+
+| Team / Squad | Domain | Responsibilities | Notes |
+|--------------|--------|------------------|-------|
+| Cows | Investments flows (example) | [WHAT THEY OWN] | [Escalation notes / SME] |
+| Chicks | Cards & Onboarding (example) | [WHAT THEY OWN] | [Escalation notes / SME] |
+| [TEAM_NAME] | [PRODUCT_AREA] | [KEY RESPONSIBILITIES] | [DEPENDENCIES / RUNBOOKS] |
+
+## Epic & Ticket Alignment
+- **Primary Epics:** [List active/ upcoming epics or initiatives that live under this mission]
+- **Example Tickets:** [Ticket IDs or themes that will likely run through this mission]
+- **Cross-Team Dependencies:** [Any shared components, APIs, or workflows to track]
+```
+
+#### Directory Creation
+
+Before creating the mission.md file, ensure the directory exists:
+
+```bash
+# Create the qa-agent-os/product directory if it doesn't exist
+mkdir -p qa-agent-os/product
 ```
 
 #### Important Constraints

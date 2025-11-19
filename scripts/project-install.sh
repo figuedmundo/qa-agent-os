@@ -9,7 +9,7 @@ set -e  # Exit on error
 
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-BASE_DIR="$HOME/agent-os"
+BASE_DIR="$HOME/qa-agent-os"
 PROJECT_DIR="$(pwd)"
 
 # Source common functions
@@ -150,17 +150,20 @@ load_configuration() {
     # Set effective values (command line overrides base config)
     EFFECTIVE_PROFILE="${PROFILE:-$BASE_PROFILE}"
     EFFECTIVE_CLAUDE_CODE_COMMANDS="${CLAUDE_CODE_COMMANDS:-$BASE_CLAUDE_CODE_COMMANDS}"
+    EFFECTIVE_GEMINI_COMMANDS="${GEMINI_COMMANDS:-$BASE_GEMINI_COMMANDS}"
     EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS="${USE_CLAUDE_CODE_SUBAGENTS:-$BASE_USE_CLAUDE_CODE_SUBAGENTS}"
     EFFECTIVE_AGENT_OS_COMMANDS="${AGENT_OS_COMMANDS:-$BASE_AGENT_OS_COMMANDS}"
     EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS="${STANDARDS_AS_CLAUDE_CODE_SKILLS:-$BASE_STANDARDS_AS_CLAUDE_CODE_SKILLS}"
     EFFECTIVE_VERSION="$BASE_VERSION"
 
     # Validate configuration using common function (may override EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS if dependency not met)
-    validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" "$EFFECTIVE_PROFILE"
+    # Validate configuration using common function (may override EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS if dependency not met)
+    validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_GEMINI_COMMANDS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" "$EFFECTIVE_PROFILE"
 
     print_verbose "Configuration loaded:"
     print_verbose "  Profile: $EFFECTIVE_PROFILE"
     print_verbose "  Claude Code commands: $EFFECTIVE_CLAUDE_CODE_COMMANDS"
+    print_verbose "  Gemini commands: $EFFECTIVE_GEMINI_COMMANDS"
     print_verbose "  Use Claude Code subagents: $EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS"
     print_verbose "  Agent OS commands: $EFFECTIVE_AGENT_OS_COMMANDS"
     print_verbose "  Standards as Claude Code Skills: $EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS"
@@ -181,7 +184,7 @@ install_standards() {
     while read file; do
         if [[ "$file" == standards/* ]]; then
             local source=$(get_profile_file "$EFFECTIVE_PROFILE" "$file" "$BASE_DIR")
-            local dest="$PROJECT_DIR/agent-os/$file"
+            local dest="$PROJECT_DIR/qa-agent-os/$file"
 
             if [[ -f "$source" ]]; then
                 local installed_file=$(copy_file "$source" "$dest")
@@ -208,7 +211,7 @@ install_claude_code_commands_with_delegation() {
     fi
 
     local commands_count=0
-    local target_dir="$PROJECT_DIR/.claude/commands/agent-os"
+    local target_dir="$PROJECT_DIR/.claude/commands/qa-agent-os"
 
     mkdir -p "$target_dir"
 
@@ -253,7 +256,7 @@ install_claude_code_commands_without_delegation() {
             if [[ -f "$source" ]]; then
                 # Handle orchestrate-tasks specially (flat destination)
                 if [[ "$file" == commands/orchestrate-tasks/orchestrate-tasks.md ]]; then
-                    local dest="$PROJECT_DIR/.claude/commands/agent-os/orchestrate-tasks.md"
+                    local dest="$PROJECT_DIR/.claude/commands/qa-agent-os/orchestrate-tasks.md"
                     # Compile without PHASE embedding for orchestrate-tasks
                     local compiled=$(compile_command "$source" "$dest" "$BASE_DIR" "$EFFECTIVE_PROFILE" "")
                     if [[ "$DRY_RUN" == "true" ]]; then
@@ -266,7 +269,7 @@ install_claude_code_commands_without_delegation() {
                     if [[ ! "$filename" =~ ^[0-9]+-.*\.md$ ]]; then
                         # Extract command name (e.g., commands/plan-product/single-agent/plan-product.md -> plan-product.md)
                         local cmd_name=$(echo "$file" | sed 's|commands/\([^/]*\)/single-agent/.*|\1|')
-                        local dest="$PROJECT_DIR/.claude/commands/agent-os/$cmd_name.md"
+                        local dest="$PROJECT_DIR/.claude/commands/qa-agent-os/$cmd_name.md"
 
                         # Compile with PHASE embedding (mode="embed")
                         local compiled=$(compile_command "$source" "$dest" "$BASE_DIR" "$EFFECTIVE_PROFILE" "embed")
@@ -287,6 +290,57 @@ install_claude_code_commands_without_delegation() {
     fi
 }
 
+install_gemini_commands() {
+    if [[ "$DRY_RUN" != "true" ]]; then
+        print_status "Installing Gemini commands..."
+    fi
+
+    local commands_count=0
+    local target_dir="$PROJECT_DIR/.gemini/commands/qa-agent-os"
+
+    mkdir -p "$target_dir"
+
+    while read file; do
+        # Process single-agent command files OR orchestrate-tasks special case
+        if [[ "$file" == commands/*/single-agent/* ]] || [[ "$file" == commands/orchestrate-tasks/orchestrate-tasks.md ]]; then
+            local source=$(get_profile_file "$EFFECTIVE_PROFILE" "$file" "$BASE_DIR")
+            if [[ -f "$source" ]]; then
+                # Handle orchestrate-tasks specially (flat destination)
+                if [[ "$file" == commands/orchestrate-tasks/orchestrate-tasks.md ]]; then
+                    local dest="$target_dir/orchestrate-tasks.md"
+                    # Compile without PHASE embedding for orchestrate-tasks
+                    local compiled=$(compile_command "$source" "$dest" "$BASE_DIR" "$EFFECTIVE_PROFILE" "")
+                    if [[ "$DRY_RUN" == "true" ]]; then
+                        INSTALLED_FILES+=("$dest")
+                    fi
+                    ((commands_count++)) || true
+                else
+                    # Only install non-numbered files (e.g., plan-product.md, not 1-product-concept.md)
+                    local filename=$(basename "$file")
+                    if [[ ! "$filename" =~ ^[0-9]+-.*\.md$ ]]; then
+                        # Extract command name (e.g., commands/plan-product/single-agent/plan-product.md -> plan-product.md)
+                        local cmd_name=$(echo "$file" | sed 's|commands/\([^/]*\)/single-agent/.*|\1|')
+                        local dest="$target_dir/$cmd_name.md"
+
+                        # Compile with PHASE embedding (mode="embed")
+                        local compiled=$(compile_command "$source" "$dest" "$BASE_DIR" "$EFFECTIVE_PROFILE" "embed")
+                        if [[ "$DRY_RUN" == "true" ]]; then
+                            INSTALLED_FILES+=("$dest")
+                        fi
+                        ((commands_count++)) || true
+                    fi
+                fi
+            fi
+        fi
+    done < <(get_profile_files "$EFFECTIVE_PROFILE" "$BASE_DIR" "commands")
+
+    if [[ "$DRY_RUN" != "true" ]]; then
+        if [[ $commands_count -gt 0 ]]; then
+            echo "✓ Installed $commands_count Gemini commands"
+        fi
+    fi
+}
+
 # Install Claude Code static agents
 install_claude_code_agents() {
     if [[ "$DRY_RUN" != "true" ]]; then
@@ -294,7 +348,7 @@ install_claude_code_agents() {
     fi
 
     local agents_count=0
-    local target_dir="$PROJECT_DIR/.claude/agents/agent-os"
+    local target_dir="$PROJECT_DIR/.claude/agents/qa-agent-os"
     
     mkdir -p "$target_dir"
 
@@ -339,11 +393,11 @@ install_agent_os_commands() {
             if [[ -f "$source" ]]; then
                 # Handle orchestrate-tasks specially (preserve folder structure)
                 if [[ "$file" == commands/orchestrate-tasks/orchestrate-tasks.md ]]; then
-                    local dest="$PROJECT_DIR/agent-os/commands/orchestrate-tasks/orchestrate-tasks.md"
+                    local dest="$PROJECT_DIR/qa-agent-os/commands/orchestrate-tasks/orchestrate-tasks.md"
                 else
                     # Extract command name and preserve numbering
                     local cmd_path=$(echo "$file" | sed 's|commands/\([^/]*\)/single-agent/\(.*\)|\1/\2|')
-                    local dest="$PROJECT_DIR/agent-os/commands/$cmd_path"
+                    local dest="$PROJECT_DIR/qa-agent-os/commands/$cmd_path"
                 fi
 
                 # Compile with workflow and standards injection and PHASE embedding
@@ -370,11 +424,11 @@ create_agent_os_folder() {
     fi
 
     # Create the main agent-os folder
-    ensure_dir "$PROJECT_DIR/agent-os"
+    ensure_dir "$PROJECT_DIR/qa-agent-os"
 
     # Create the configuration file
     local config_file=$(write_project_config "$EFFECTIVE_VERSION" "$EFFECTIVE_PROFILE" \
-        "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" \
+        "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_GEMINI_COMMANDS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" \
         "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS")
     if [[ "$DRY_RUN" == "true" && -n "$config_file" ]]; then
         INSTALLED_FILES+=("$config_file")
@@ -399,6 +453,7 @@ perform_installation() {
     print_status "Configuration:"
     echo -e "  Profile: ${YELLOW}$EFFECTIVE_PROFILE${NC}"
     echo -e "  Claude Code commands: ${YELLOW}$EFFECTIVE_CLAUDE_CODE_COMMANDS${NC}"
+    echo -e "  Gemini commands: ${YELLOW}$EFFECTIVE_GEMINI_COMMANDS${NC}"
     echo -e "  Use Claude Code subagents: ${YELLOW}$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS${NC}"
     echo -e "  Standards as Claude Code Skills: ${YELLOW}$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS${NC}"
     echo -e "  Agent OS commands: ${YELLOW}$EFFECTIVE_AGENT_OS_COMMANDS${NC}"
@@ -417,6 +472,9 @@ perform_installation() {
                 install_claude_code_agents
             else
                 install_claude_code_commands_without_delegation
+            fi
+            if [[ "$GEMINI_COMMANDS" == "true" ]]; then
+                install_gemini_commands
             fi
             install_claude_code_skills
             install_improve_skills_command
@@ -451,6 +509,9 @@ perform_installation() {
                 echo ""
             else
                 install_claude_code_commands_without_delegation
+            fi
+            if [[ "$GEMINI_COMMANDS" == "true" ]]; then
+                install_gemini_commands
                 echo ""
             fi
             install_claude_code_skills
@@ -477,7 +538,7 @@ perform_installation() {
     else
         print_success "Agent OS has been successfully installed in your project!"
         echo ""
-        echo -e "${GREEN}Visit the docs for guides on how to use Agent OS: https://buildermethods.com/agent-os${NC}"
+        echo -e "${GREEN}Visit the docs for guides on how to use Agent OS: https://buildermethods.com/qa-agent-os${NC}"
         echo ""
     fi
 }
@@ -490,10 +551,10 @@ handle_reinstallation() {
     echo ""
 
     # Check for Claude Code files
-    if [[ -d "$PROJECT_DIR/.claude/agents/agent-os" ]] || [[ -d "$PROJECT_DIR/.claude/commands/agent-os" ]]; then
+    if [[ -d "$PROJECT_DIR/.claude/agents/qa-agent-os" ]] || [[ -d "$PROJECT_DIR/.claude/commands/qa-agent-os" ]]; then
         print_warning "This will also DELETE:"
-        [[ -d "$PROJECT_DIR/.claude/agents/agent-os" ]] && echo "  - .claude/agents/agent-os/"
-        [[ -d "$PROJECT_DIR/.claude/commands/agent-os" ]] && echo "  - .claude/commands/agent-os/"
+        [[ -d "$PROJECT_DIR/.claude/agents/qa-agent-os" ]] && echo "  - .claude/agents/qa-agent-os/"
+        [[ -d "$PROJECT_DIR/.claude/commands/qa-agent-os" ]] && echo "  - .claude/commands/qa-agent-os/"
         echo ""
     fi
 
@@ -506,9 +567,9 @@ handle_reinstallation() {
 
     if [[ "$DRY_RUN" != "true" ]]; then
         print_status "Removing existing installation..."
-        rm -rf "$PROJECT_DIR/agent-os"
-        rm -rf "$PROJECT_DIR/.claude/agents/agent-os"
-        rm -rf "$PROJECT_DIR/.claude/commands/agent-os"
+        rm -rf "$PROJECT_DIR/qa-agent-os"
+        rm -rf "$PROJECT_DIR/.claude/agents/qa-agent-os"
+        rm -rf "$PROJECT_DIR/.claude/commands/qa-agent-os"
         echo "✓ Existing installation removed"
         echo ""
     fi

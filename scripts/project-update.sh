@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # =============================================================================
-# Agent OS Project Update Script
-# Updates Agent OS installation in a project
+# QA Agent OS Project Update Script
+# Updates QA Agent OS installation in a project
 # =============================================================================
 
 set -e  # Exit on error
@@ -43,15 +43,15 @@ show_help() {
     cat << EOF
 Usage: $0 [OPTIONS]
 
-Update Agent OS installation in the current project directory.
+Update QA Agent OS installation in the current project directory.
 
 Options:
     --profile PROFILE                        Use specified profile (default: from project config)
     --claude-code-commands [BOOL]            Install Claude Code commands (true/false)
     --use-claude-code-subagents [BOOL]       Use Claude Code subagents with delegation (true/false)
-    --agent-os-commands [BOOL]               Install agent-os commands for other tools (true/false)
+    --agent-os-commands [BOOL]               Install QA Agent OS commands for other tools (true/false)
     --standards-as-claude-code-skills [BOOL] Use Claude Code Skills for standards (true/false)
-    --re-install                             Delete and reinstall Agent OS
+    --re-install                             Delete and reinstall QA Agent OS
     --overwrite-all                          Overwrite all existing files
     --overwrite-agents                       Overwrite existing agent files
     --overwrite-commands                     Overwrite existing command files
@@ -263,13 +263,13 @@ update_standards() {
 
     if [[ "$DRY_RUN" != "true" ]]; then
         if [[ $standards_new -gt 0 ]]; then
-            echo "✓ Added $standards_new standards in agent-os/standards"
+            echo "✓ Added $standards_new standards in qa-agent-os/standards"
         fi
         if [[ $standards_updated -gt 0 ]]; then
-            echo "✓ Updated $standards_updated standards in agent-os/standards"
+            echo "✓ Updated $standards_updated standards in qa-agent-os/standards"
         fi
         if [[ $standards_skipped -gt 0 ]]; then
-            echo -e "${YELLOW}$standards_skipped files in agent-os/standards were not updated and overwritten. To update and overwrite these, re-run with --overwrite-standards flag.${NC}"
+            echo -e "${YELLOW}$standards_skipped files in qa-agent-os/standards were not updated and overwritten. To update and overwrite these, re-run with --overwrite-standards flag.${NC}"
         fi
     fi
 }
@@ -290,7 +290,7 @@ update_single_agent_commands() {
                 if [[ "$file" == commands/orchestrate-tasks/orchestrate-tasks.md ]]; then
                     local dest="$PROJECT_DIR/qa-agent-os/commands/orchestrate-tasks/orchestrate-tasks.md"
                 else
-                    # Strip the single-agent/ subfolder for agent-os/commands structure
+                    # Strip the single-agent/ subfolder for qa-agent-os/commands structure
                     local dest_file=$(echo "$file" | sed 's/\/single-agent//')
                     local dest="$PROJECT_DIR/qa-agent-os/$dest_file"
                 fi
@@ -554,9 +554,9 @@ update_claude_code_files() {
     fi
 }
 
-# Update agent-os folder and configuration
+# Update qa-agent-os folder and configuration
 update_agent_os_folder() {
-    print_status "Updating agent-os folder"
+    print_status "Updating qa-agent-os folder"
 
     # Update the configuration file
     write_project_config "$EFFECTIVE_VERSION" "$PROJECT_PROFILE" \
@@ -564,8 +564,8 @@ update_agent_os_folder() {
         "$PROJECT_AGENT_OS_COMMANDS" "$PROJECT_STANDARDS_AS_CLAUDE_CODE_SKILLS"
 
     if [[ "$DRY_RUN" != "true" ]]; then
-        echo "✓ Updated agent-os folder"
-        echo "✓ Updated agent-os project configuration"
+        echo "✓ Updated qa-agent-os folder"
+        echo "✓ Updated qa-agent-os project configuration"
     fi
 }
 
@@ -581,7 +581,7 @@ perform_update() {
     echo -e "  QA Agent OS commands: ${YELLOW}$PROJECT_AGENT_OS_COMMANDS${NC}"
     echo ""
 
-    # Update agent-os folder and configuration
+    # Update qa-agent-os folder and configuration
     update_agent_os_folder
     echo ""
 
@@ -606,7 +606,7 @@ perform_update() {
         echo ""
     fi
 
-    # Update agent-os commands if enabled
+    # Update QA Agent OS commands if enabled
     if [[ "$PROJECT_AGENT_OS_COMMANDS" == "true" ]]; then
         update_single_agent_commands
         echo ""
@@ -682,7 +682,7 @@ prompt_update_confirmation() {
             print_warning "Dry run simulation"
         fi
         echo ""
-        print_status "Your project's Agent OS version and/or configuration is different than the version you're trying to install."
+        print_status "Your project's QA Agent OS version and/or configuration is different than the version you're trying to install."
     else
         echo ""
         print_color "$PURPLE" "=== Confirm Update ==="
@@ -700,7 +700,7 @@ prompt_update_confirmation() {
     echo ""
 
     # Display current project config
-    print_status "Current project's Agent OS:"
+    print_status "Current project's QA Agent OS:"
     if [[ -n "$current_version" ]]; then
         echo "  Version: $current_version"
     else
@@ -714,7 +714,7 @@ prompt_update_confirmation() {
         echo "  Profile: ${PROJECT_PROFILE:-default}"
         echo "  Claude Code commands: ${PROJECT_CLAUDE_CODE_COMMANDS:-false}"
         echo "  Use Claude Code subagents: ${PROJECT_USE_CLAUDE_CODE_SUBAGENTS:-false}"
-        echo "  Agent OS commands: ${PROJECT_AGENT_OS_COMMANDS:-false}"
+        echo "  QA Agent OS commands: ${PROJECT_AGENT_OS_COMMANDS:-false}"
         echo "  Standards as Claude Code Skills: ${PROJECT_STANDARDS_AS_CLAUDE_CODE_SKILLS:-false}"
     else
         echo "  Config: Unable to read current configuration"
@@ -722,12 +722,12 @@ prompt_update_confirmation() {
     echo ""
 
     # Display incoming config
-    print_status "Incoming Agent OS:"
+    print_status "Incoming QA Agent OS:"
     echo "  Version: $target_version"
     echo "  Profile: $EFFECTIVE_PROFILE"
     echo "  Claude Code commands: $EFFECTIVE_CLAUDE_CODE_COMMANDS"
     echo "  Use Claude Code subagents: $EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS"
-    echo "  Agent OS commands: $EFFECTIVE_AGENT_OS_COMMANDS"
+    echo "  QA Agent OS commands: $EFFECTIVE_AGENT_OS_COMMANDS"
     echo "  Standards as Claude Code Skills: $EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS"
     echo ""
 
@@ -740,8 +740,8 @@ prompt_update_confirmation() {
     echo ""
     echo -e "${GREEN}✔ These will remain intact:${NC}"
     echo ""
-    echo "  - agent-os/features/*"
-    echo "  - agent-os/product/*"
+    echo "  - qa-agent-os/features/*"
+    echo "  - qa-agent-os/product/*"
     echo ""
     if [[ "$DRY_RUN" == "true" ]]; then
         echo -e "${YELLOW}⚠️  These WOULD BE deleted and re-installed to match the new version and configurations if this were a real update (but it's a DRY RUN):${NC}"
@@ -749,10 +749,10 @@ prompt_update_confirmation() {
         echo -e "${YELLOW}⚠️  These will be deleted and re-installed to match the new version and configurations:${NC}"
     fi
     echo ""
-    echo "  - agent-os/config.yml"
-    echo "  - agent-os/standards/"
+    echo "  - qa-agent-os/config.yml"
+    echo "  - qa-agent-os/standards/"
     if [[ "$EFFECTIVE_AGENT_OS_COMMANDS" == "true" ]] || [[ -d "$PROJECT_DIR/qa-agent-os/commands" ]]; then
-        echo "  - agent-os/commands/"
+        echo "  - qa-agent-os/commands/"
     fi
     if [[ "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" == "true" ]] || [[ -d "$PROJECT_DIR/.claude/agents/qa-agent-os" ]]; then
         echo "  - .claude/agents/qa-agent-os/"
@@ -761,7 +761,7 @@ prompt_update_confirmation() {
         echo "  - .claude/commands/qa-agent-os/"
     fi
     if [[ "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" == "true" ]] || [[ -d "$PROJECT_DIR/.claude/skills" ]]; then
-        echo "  - .claude/skills/ (Agent OS skills)"
+        echo "  - .claude/skills/ (QA Agent OS skills)"
     fi
     echo ""
 
@@ -784,17 +784,17 @@ perform_update_cleanup() {
         echo ""
     fi
 
-    # Delete agent-os/standards/ (will be reinstalled)
+    # Delete qa-agent-os/standards/ (will be reinstalled)
     if [[ -d "$PROJECT_DIR/qa-agent-os/standards" ]]; then
-        print_status "Removing agent-os/standards/"
+        print_status "Removing qa-agent-os/standards/"
         if [[ "$DRY_RUN" != "true" ]]; then
             rm -rf "$PROJECT_DIR/qa-agent-os/standards"
         fi
     fi
 
-    # Delete agent-os/commands/ if exists
+    # Delete qa-agent-os/commands/ if exists
     if [[ -d "$PROJECT_DIR/qa-agent-os/commands" ]]; then
-        print_status "Removing agent-os/commands/"
+        print_status "Removing qa-agent-os/commands/"
         if [[ "$DRY_RUN" != "true" ]]; then
             rm -rf "$PROJECT_DIR/qa-agent-os/commands"
         fi
@@ -824,7 +824,7 @@ perform_update_cleanup() {
         fi
     fi
 
-    # Delete individual Agent OS skills (new location: .claude/skills/[skill-name]/)
+    # Delete individual QA Agent OS skills (new location: .claude/skills/[skill-name]/)
     # Find all skills that match standards files from the profile
     if [[ -d "$PROJECT_DIR/.claude/skills" ]]; then
         while read file; do
@@ -840,9 +840,9 @@ perform_update_cleanup() {
         done < <(get_profile_files "$PROJECT_PROFILE" "$BASE_DIR" "standards")
     fi
 
-    # Delete agent-os/roles/ if exists (legacy)
+    # Delete qa-agent-os/roles/ if exists (legacy)
     if [[ -d "$PROJECT_DIR/qa-agent-os/roles" ]]; then
-        print_status "Removing legacy agent-os/roles/"
+        print_status "Removing legacy qa-agent-os/roles/"
         if [[ "$DRY_RUN" != "true" ]]; then
             rm -rf "$PROJECT_DIR/qa-agent-os/roles"
         fi

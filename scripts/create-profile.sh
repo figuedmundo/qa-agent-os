@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # =============================================================================
-# Agent OS Create Profile Script
-# Creates a new profile for Agent OS
+# QA Agent OS Create Profile Script
+# Creates a new profile for QA Agent OS
 # =============================================================================
 
 set -e  # Exit on error
@@ -277,7 +277,7 @@ EOF
 main() {
     clear
     echo ""
-    echo -e "${BLUE}=== Agent OS - Create Profile Utility ===${NC}"
+    echo -e "${BLUE}=== QA Agent OS - Create Profile Utility ===${NC}"
     echo ""
 
     # Validate installation
@@ -314,7 +314,7 @@ main() {
     echo ""
     print_status "Next steps:"
     echo "  1. Customize standards, workflows, and configurations in your profile"
-    echo "  2. Install Agent OS in a project using this profile with: ~/qa-agent-os/scripts/project-install.sh --profile $PROFILE_NAME"
+    echo "  2. Install QA Agent OS in a project using this profile with: ~/qa-agent-os/scripts/project-install.sh --profile $PROFILE_NAME"
     echo ""
     echo -e "${GREEN}Visit the docs on customizing your profile:"
     echo ""

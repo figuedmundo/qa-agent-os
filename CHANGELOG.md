@@ -3,6 +3,12 @@
 Get notified of major releases by subscribing here:
 https://buildermethods.com/qa-agent-os
 
+## [0.1.0] - 2025-11-19
+
+- Reset QA Agent OS versioning to its own 0.x line to distinguish it from the legacy developer-focused agent-os tool.
+- Updated `scripts/base-install.sh` messaging so the installer clearly references QA Agent OS, allows side-by-side installs with `~/agent-os`, and clarifies that only `~/qa-agent-os` is managed.
+- Added README guidance explaining that QA Agent OS (~/qa-agent-os) and agent-os (~/agent-os) can be installed on the same machine for hybrid QA/dev workflows.
+
 ## [2.1.1] - 2025-10-29
 
 - Replaced references to 'spec-researcher' (depreciated agent name) with 'spec-shaper'.

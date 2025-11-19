@@ -1063,22 +1063,28 @@ compile_gemini_command() {
     local content=$(cat "$temp_md")
     rm -f "$temp_md"
 
-    # Extract description if present (first line if it's a comment or header, otherwise default)
+    # Extract description
     local description="QA Agent OS Command"
-    # Try to find a description from the first line if it starts with #
-    local first_line=$(echo "$content" | head -n 1)
-    if [[ "$first_line" =~ ^#[[:space:]]*(.*) ]]; then
-        description="${BASH_REMATCH[1]}"
+    
+    # 1. Try to find the first H1 header (# Title)
+    # We use grep to find the first occurrence, then sed to clean it
+    local h1_header=$(echo "$content" | grep -m 1 "^# " | sed 's/^# //')
+    
+    if [[ -n "$h1_header" ]]; then
+        description="$h1_header"
+    else
+        # 2. Fallback: Use filename converted to Title Case
+        local filename=$(basename "$source_file" .md)
+        # Replace hyphens with spaces and capitalize first letter of each word
+        description=$(echo "$filename" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
     fi
 
-    # Escape quotes for TOML string
-    # We use triple quotes for the prompt, so we need to escape triple quotes if they exist (rare)
-    # But for safety, we just use the content as is in a multi-line string
-    
-    # Create TOML content
+    # Create TOML content with argument support
     local toml_content="description = \"$description\"
 
 prompt = \"\"\"
+Context from user arguments: {{args}}
+
 $content
 \"\"\""
 

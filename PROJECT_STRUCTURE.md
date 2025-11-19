@@ -60,11 +60,11 @@ This document outlines the directory structure of the QA Agent OS project.
 │       │   │   ├── `bug-reporting-standard.md`
 │       │   │   ├── `bug-reporting.md`
 │       │   │   ├── `bug-template.md`
-│       │   │   ├── `evidence-template.md`
 │       │   │   └── `severity-rules.md`
 │       │   ├── **global/**: Global conventions applicable across all tasks.
 │       │   │   ├── `bugs.md`
 │       │   │   ├── `conventions.md`
+│       │   │   ├── `evidence-template.md`
 │       │   │   └── `testcases.md`
 │       │   ├── **requirement-analysis/**: Guidelines for analyzing business requirements.
 │       │   │   ├── `acceptance-criteria-checklist.md`
@@ -89,7 +89,7 @@ This document outlines the directory structure of the QA Agent OS project.
 │           │   ├── `create-product-mission.md`
 │           │   └── `gather-product-info.md`
 │           └── **testing/**: Workflows for various testing-related activities.
-│               ├── `compile-testing-standards.md`
+│               ├── `compile-testing-standards.md`: Gathers the exact set of `@qa-agent-os/standards/...` references a downstream workflow must follow.
 │               ├── `create-ticket.md`: End-to-end flow chaining requirement analysis + test cases.
 │               ├── `initialize-feature.md`: Workflow for setting up new feature/ticket directories.
 │               ├── `requirement-analysis.md`: Workflow for detailed requirement analysis.

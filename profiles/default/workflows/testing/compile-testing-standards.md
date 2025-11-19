@@ -1,32 +1,58 @@
-#### Compile Implementation Standards
+#### Compile Testing Standards
 
-Use the following logic to compile a list of file references to standards that should guide testing:
+Use this workflow at the start of any testing-related command (requirement analysis, test planning, test case generation, bug work) whenever you must provide explicit `@qa-agent-os/...` file references. It replaces the legacy `orchestration.yml` logic with the profile-aware standards that live in `profiles/default/standards`.
 
-##### Steps to Compile Standards List
+> Skip this workflow only when `standards_as_claude_code_skills` is `true` in `config.yml`, because Claude Code will already ingest the standards as skills.
 
-[AI the part below was part of original agent-os project , please read , analise if is needed in qa-agent-os]
+---
 
-1. Find the current task group in `orchestration.yml`
-2. Check the list of `standards` specified for this task group in `orchestration.yml`
-3. Compile the list of file references to those standards, one file reference per line, using this logic for determining which files to include:
-   a. If the value for `standards` is simply `all`, then include every single file, folder, sub-folder and files within sub-folders in your list of files.
-   b. If the item under standards ends with "*" then it means that all files within this folder or sub-folder should be included. For example, `frontend/*` means include all files and sub-folders and their files located inside of `agent-os/standards/frontend/`.
-   c. If a file ends in `.md` then it means this is one specific file you must include in your list of files. For example `backend/api.md` means you must include the file located at `agent-os/standards/backend/api.md`.
-   d. De-duplicate files in your list of file references.
+### Step 1: Determine Task Group
+Identify which workflow you are about to run so you can pull the right folders:
 
-   Please AI help to understand this part and if we need to include in testing stadards
+| Task Type | Primary Standards Folders |
+| --- | --- |
+| Requirement Analysis / Acceptance Criteria | `global/`, `requirement-analysis/`, `bugs/severity-rules.md` |
+| Test Planning | `global/`, `requirement-analysis/`, `testcases/`, `testing/`, `bugs/` (severity/evidence) |
+| Test Case Generation | `global/`, `testcases/`, `testing/` (API/exploratory), `bugs/severity-rules.md` |
+| Bug Workflows | `global/`, `bugs/`, `testing/test-plan-template.md` (for exit criteria) |
 
-##### Output Format
+Always include `global/` because it contains cross-cutting conventions and the evidence template moved here.
 
-The compiled list of standards should look something like this, where each file reference is on its own line and begins with `@`. The exact list of files will vary:
+### Step 2: Build the File List
+1. `cd profiles/default/standards`.
+2. Gather the relevant `.md` files from the folders identified in Step 1.
+   - Use `find <folder> -name '*.md' | sort` to capture all files when `*` applies.
+   - When only a single file is needed (e.g., `bugs/severity-rules.md`), reference it explicitly.
+3. Deduplicate and keep the list sorted for readability.
+
+```bash
+cd profiles/default/standards
+find global requirement-analysis -name '*.md' | sort -u
+```
+
+### Step 3: Format Output
+Transform each relative path into an `@qa-agent-os/standards/...` reference (omit the `profiles/default/` prefix so it matches the rest of our workflows).
+
+Example transformation:
 
 ```
-@qa-agent-os/standards/global/bugs.md
+global/conventions.md            -> @qa-agent-os/standards/global/conventions.md
+testcases/test-case-standard.md  -> @qa-agent-os/standards/testcases/test-case-standard.md
+```
+
+### Step 4: Share With the Next Workflow
+Paste the compiled list (one reference per line) into your response or into the calling workflow so downstream agents know exactly which standards to follow. A typical list for test planning looks like:
+
+```
 @qa-agent-os/standards/global/conventions.md
+@qa-agent-os/standards/global/evidence-template.md
 @qa-agent-os/standards/global/testcases.md
-@qa-agent-os/standards/bugs/bug-analysis.md
+@qa-agent-os/standards/requirement-analysis/requirement-analysis-checklist.md
 @qa-agent-os/standards/testcases/test-case-standard.md
-@qa-agent-os/standards/testing/exploratory-testing.md
-@qa-agent-os/standards/requirement-analysis/acceptance-criteria-checklist.md
+@qa-agent-os/standards/testcases/test-generation.md
+@qa-agent-os/standards/testing/test-plan-template.md
+@qa-agent-os/standards/testing/api-testing.md
+@qa-agent-os/standards/bugs/severity-rules.md
 ```
-AI Please help to fill this list
+
+Re-run this workflow whenever new standards are added or when switching to a different testing task group so the reference list stays accurate.

@@ -42,6 +42,11 @@ This is the heart of the system, containing the actual content that defines the 
     -   `commands/`: Contains specific, single-purpose commands that can be triggered.
     -   `agents/`: Defines the roles and responsibilities of different sub-agents in a multi-agent configuration.
 
+### 2.4. Standards Injection During Testing Workflows
+-   The `workflows/testing/compile-testing-standards.md` helper is executed at the beginning of every testing-oriented workflow (requirement analysis, test planning, testcase generation, bug work) whenever `standards_as_claude_code_skills` is `false`.
+-   It inspects the active profile’s `profiles/<name>/standards/` tree and emits explicit `@qa-agent-os/standards/...` references so Claude/Cursor receive the exact guardrails required for that task group.
+-   This replaces the deprecated `orchestration.yml` mappings and keeps workflows resilient to future additions or reorganizations of the standards directory.
+
 ## 3. Workflow and Data Flow Diagram
 
 The following diagram illustrates the process of how the QA Agent OS compiles the various components into a final, contextual prompt for an AI agent.

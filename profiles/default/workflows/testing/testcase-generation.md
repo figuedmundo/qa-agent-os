@@ -14,6 +14,10 @@ This workflow guides the agent in generating a comprehensive suite of test cases
 
 ## Workflow
 
+### Step 0: Compile Applicable Standards
+
+Before reading requirements, run `{{workflows/testing/compile-testing-standards}}` to gather the current list of `@qa-agent-os/standards/...` references you must honor (skip only if `standards_as_claude_code_skills` is `true`). Share the list in your response so downstream users know which guardrails were enforced.
+
 ### Step 1: Ingest Requirements
 
 Read the detailed requirements from the ticket's `planning` directory.

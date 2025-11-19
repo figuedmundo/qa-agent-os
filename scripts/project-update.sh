@@ -186,7 +186,6 @@ load_configurations() {
     EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS="${STANDARDS_AS_CLAUDE_CODE_SKILLS:-$BASE_STANDARDS_AS_CLAUDE_CODE_SKILLS}"
     EFFECTIVE_VERSION="$BASE_VERSION"
 
-    # Validate config but suppress warnings (will show after user confirms update)
     validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" \
         "$EFFECTIVE_GEMINI_COMMANDS" \
         "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" \
@@ -1014,7 +1013,7 @@ main() {
     if prompt_update_confirmation "$PROJECT_VERSION" "$has_version_diff" "$has_config_diff"; then
         # User confirmed - show any config validation warnings
         echo ""
-        validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" "$EFFECTIVE_PROFILE" "true"
+        validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_GEMINI_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" "$EFFECTIVE_PROFILE" "true"
         echo ""
 
         # Perform cleanup and update

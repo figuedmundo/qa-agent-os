@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # =============================================================================
-# Agent OS Project Installation Script
-# Installs Agent OS into a project's codebase
+# QA Agent OS Project Installation Script
+# Installs QA Agent OS into a project's codebase
 # =============================================================================
 
 set -e  # Exit on error
@@ -41,15 +41,15 @@ show_help() {
     cat << EOF
 Usage: $0 [OPTIONS]
 
-Install Agent OS into the current project directory.
+Install QA Agent OS into the current project directory.
 
 Options:
     --profile PROFILE                        Use specified profile (default: from config.yml)
     --claude-code-commands [BOOL]            Install Claude Code commands (default: from config.yml)
     --use-claude-code-subagents [BOOL]       Use Claude Code subagents (default: from config.yml)
-    --agent-os-commands [BOOL]               Install agent-os commands (default: from config.yml)
+    --agent-os-commands [BOOL]               Install QA Agent OS commands (default: from config.yml)
     --standards-as-claude-code-skills [BOOL] Use Claude Code Skills for standards (default: from config.yml)
-    --re-install                             Delete and reinstall Agent OS
+    --re-install                             Delete and reinstall QA Agent OS
     --overwrite-all                          Overwrite all existing files during update
     --overwrite-standards                    Overwrite existing standards during update
     --overwrite-commands                     Overwrite existing commands during update
@@ -158,14 +158,18 @@ load_configuration() {
 
     # Validate configuration using common function (may override EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS if dependency not met)
     # Validate configuration using common function (may override EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS if dependency not met)
-    validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_GEMINI_COMMANDS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" "$EFFECTIVE_PROFILE"
+    validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" \
+        "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" \
+        "$EFFECTIVE_AGENT_OS_COMMANDS" \
+        "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" \
+        "$EFFECTIVE_PROFILE"
 
     print_verbose "Configuration loaded:"
     print_verbose "  Profile: $EFFECTIVE_PROFILE"
     print_verbose "  Claude Code commands: $EFFECTIVE_CLAUDE_CODE_COMMANDS"
     print_verbose "  Gemini commands: $EFFECTIVE_GEMINI_COMMANDS"
     print_verbose "  Use Claude Code subagents: $EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS"
-    print_verbose "  Agent OS commands: $EFFECTIVE_AGENT_OS_COMMANDS"
+    print_verbose "  QA Agent OS commands: $EFFECTIVE_AGENT_OS_COMMANDS"
     print_verbose "  Standards as Claude Code Skills: $EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS"
 }
 
@@ -198,7 +202,7 @@ install_standards() {
 
     if [[ "$DRY_RUN" != "true" ]]; then
         if [[ $standards_count -gt 0 ]]; then
-            echo "✓ Installed $standards_count standards in agent-os/standards"
+            echo "✓ Installed $standards_count standards in qa-agent-os/standards"
         fi
     fi
 }
@@ -378,10 +382,10 @@ install_claude_code_agents() {
     fi
 }
 
-# Install agent-os commands (single-agent files with injection)
+# Install QA Agent OS commands (single-agent files with injection)
 install_agent_os_commands() {
     if [[ "$DRY_RUN" != "true" ]]; then
-        print_status "Installing agent-os commands..."
+        print_status "Installing QA Agent OS commands..."
     fi
 
     local commands_count=0
@@ -412,18 +416,18 @@ install_agent_os_commands() {
 
     if [[ "$DRY_RUN" != "true" ]]; then
         if [[ $commands_count -gt 0 ]]; then
-            echo "✓ Installed $commands_count agent-os commands"
+            echo "✓ Installed $commands_count QA Agent OS commands"
         fi
     fi
 }
 
-# Create agent-os folder structure
+# Create qa-agent-os folder structure
 create_agent_os_folder() {
     if [[ "$DRY_RUN" != "true" ]]; then
-        print_status "Installing agent-os folder"
+        print_status "Installing QA Agent OS folder"
     fi
 
-    # Create the main agent-os folder
+    # Create the main qa-agent-os folder
     ensure_dir "$PROJECT_DIR/qa-agent-os"
 
     # Create the configuration file
@@ -435,8 +439,8 @@ create_agent_os_folder() {
     fi
 
     if [[ "$DRY_RUN" != "true" ]]; then
-        echo "✓ Created agent-os folder"
-        echo "✓ Created agent-os project configuration"
+        echo "✓ Created qa-agent-os folder"
+        echo "✓ Created qa-agent-os project configuration"
     fi
 }
 
@@ -456,7 +460,7 @@ perform_installation() {
     echo -e "  Gemini commands: ${YELLOW}$EFFECTIVE_GEMINI_COMMANDS${NC}"
     echo -e "  Use Claude Code subagents: ${YELLOW}$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS${NC}"
     echo -e "  Standards as Claude Code Skills: ${YELLOW}$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS${NC}"
-    echo -e "  Agent OS commands: ${YELLOW}$EFFECTIVE_AGENT_OS_COMMANDS${NC}"
+    echo -e "  QA Agent OS commands: ${YELLOW}$EFFECTIVE_AGENT_OS_COMMANDS${NC}"
     echo ""
 
     # In dry run mode, just collect files silently
@@ -480,7 +484,7 @@ perform_installation() {
             install_improve_skills_command
         fi
 
-        # Install agent-os commands if enabled
+        # Install QA Agent OS commands if enabled
         if [[ "$EFFECTIVE_AGENT_OS_COMMANDS" == "true" ]]; then
             install_agent_os_commands
         fi
@@ -519,7 +523,7 @@ perform_installation() {
             echo ""
         fi
 
-        # Install agent-os commands if enabled
+        # Install QA Agent OS commands if enabled
         if [[ "$EFFECTIVE_AGENT_OS_COMMANDS" == "true" ]]; then
             install_agent_os_commands
             echo ""
@@ -536,9 +540,9 @@ perform_installation() {
             perform_installation
         fi
     else
-        print_success "Agent OS has been successfully installed in your project!"
+        print_success "QA Agent OS has been successfully installed in your project!"
         echo ""
-        echo -e "${GREEN}Visit the docs for guides on how to use Agent OS: https://buildermethods.com/qa-agent-os${NC}"
+        echo -e "${GREEN}Visit the docs for guides on how to use QA Agent OS: https://buildermethods.com/qa-agent-os${NC}"
         echo ""
     fi
 }
@@ -547,7 +551,7 @@ perform_installation() {
 handle_reinstallation() {
     print_section "Re-installation"
 
-    print_warning "This will DELETE your current agent-os/ folder and reinstall from scratch."
+    print_warning "This will DELETE your current qa-agent-os/ folder and reinstall from scratch."
     echo ""
 
     # Check for Claude Code files
@@ -582,7 +586,7 @@ handle_reinstallation() {
 # -----------------------------------------------------------------------------
 
 main() {
-    print_section "Agent OS Project Installation"
+    print_section "QA Agent OS Project Installation"
 
     # Parse command line arguments
     parse_arguments "$@"
@@ -596,13 +600,13 @@ main() {
     # Load configuration
     load_configuration
 
-    # Check if Agent OS is already installed
+    # Check if QA Agent OS is already installed
     if is_agent_os_installed "$PROJECT_DIR"; then
         if [[ "$RE_INSTALL" == "true" ]]; then
             handle_reinstallation
         else
             # Delegate to update script
-            print_status "Agent OS is already installed. Running update..."
+            print_status "QA Agent OS is already installed. Running update..."
             exec "$BASE_DIR/scripts/project-update.sh" "$@"
         fi
     else

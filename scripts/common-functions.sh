@@ -2,7 +2,7 @@
 
 # =============================================================================
 # QA Agent OS Common Functions
-# Shared utilities for Agent OS scripts
+# Shared utilities for QA Agent OS scripts
 # =============================================================================
 
 # Colors for output
@@ -689,7 +689,7 @@ process_workflows() {
             rm -f "$temp_content" "$temp_replacement"
         else
             # Instead of printing warning to stderr, insert it into the content
-            local warning_msg="⚠️ This workflow file was not found in your Agent OS base installation at ~/qa-agent-os/profiles/$profile/workflows/${workflow_path}.md"
+            local warning_msg="⚠️ This workflow file was not found in your QA Agent OS base installation at ~/qa-agent-os/profiles/$profile/workflows/${workflow_path}.md"
             # Use perl for safer replacement with special characters
             local temp_content=$(mktemp)
             echo "$content" > "$temp_content"
@@ -750,7 +750,7 @@ process_phase_tags() {
         return 0
     fi
 
-    # Find all PHASE tags: {{PHASE X: @agent-os/commands/path/to/file.md}}
+    # Find all PHASE tags: {{PHASE X: @qa-agent-os/commands/path/to/file.md}}
     local phase_refs=$(echo "$content" | grep -o '{{PHASE [^}]*}}' | sort -u)
 
     if [[ -z "$phase_refs" ]]; then
@@ -765,7 +765,7 @@ process_phase_tags() {
 
         if [[ "$mode" == "embed" ]]; then
             # CASE A: Embed the file content with H1 header
-            # Extract: {{PHASE 1: @agent-os/commands/plan-product/1-product-concept.md}}
+            # Extract: {{PHASE 1: @qa-agent-os/commands/plan-product/1-product-concept.md}}
             # To get: PHASE 1, plan-product/1-product-concept.md, "Product Concept"
 
             local phase_label=$(echo "$phase_ref" | sed 's/{{//' | sed 's/:.*$//')  # "PHASE 1"
@@ -1093,7 +1093,7 @@ check_needs_migration() {
 # Installation Check Functions
 # -----------------------------------------------------------------------------
 
-# Check if Agent OS is installed in project
+# Check if QA Agent OS is installed in project
 is_agent_os_installed() {
     local project_dir=$1
 
@@ -1119,10 +1119,10 @@ get_project_config() {
 # Validate base installation exists
 validate_base_installation() {
     if [[ ! -d "$BASE_DIR" ]]; then
-        print_error "Agent OS base installation not found at ~/qa-agent-os/"
+        print_error "QA Agent OS base installation not found at ~/qa-agent-os/"
         echo ""
         print_status "Please run the base installation first:"
-        echo "  curl -sSL https://raw.githubusercontent.com/buildermethods/qa-agent-os/main/scripts/base-install.sh | bash"
+        echo "  curl -sSL https://raw.githubusercontent.com/figuedmundo/qa-agent-os/main/scripts/base-install.sh | bash"
         echo ""
         exit 1
     fi
@@ -1140,10 +1140,10 @@ check_not_base_installation() {
     if [[ -f "$PROJECT_DIR/qa-agent-os/config.yml" ]]; then
         if grep -q "base_install: true" "$PROJECT_DIR/qa-agent-os/config.yml"; then
             echo ""
-            print_error "Cannot install Agent OS in base installation directory"
+            print_error "Cannot install QA Agent OS in base installation directory"
             echo ""
-            echo "It appears you are in the location of your Agent OS base installation (your home directory)."
-            echo "To install Agent OS in a project, move to your project's root folder:"
+            echo "It appears you are in the location of your QA Agent OS base installation (your home directory)."
+            echo "To install QA Agent OS in a project, move to your project's root folder:"
             echo ""
             echo "  cd path/to/project"
             echo ""
@@ -1180,7 +1180,7 @@ parse_bool_flag() {
 
 # Load base installation configuration
 load_base_config() {
-    BASE_VERSION=$(get_yaml_value "$BASE_DIR/config.yml" "version" "2.1.0")
+    BASE_VERSION=$(get_yaml_value "$BASE_DIR/config.yml" "version" "0.1.0")
     BASE_PROFILE=$(get_yaml_value "$BASE_DIR/config.yml" "profile" "default")
     BASE_CLAUDE_CODE_COMMANDS=$(get_yaml_value "$BASE_DIR/config.yml" "claude_code_commands" "true")
     BASE_USE_CLAUDE_CODE_SUBAGENTS=$(get_yaml_value "$BASE_DIR/config.yml" "use_claude_code_subagents" "true")
@@ -1375,7 +1375,7 @@ create_standard_skill() {
     local human_name=$(convert_filename_to_human_name "$path_without_standards")
     local human_name_capitalized=$(convert_filename_to_human_name_capitalized "$path_without_standards")
 
-    # Create skill directory (directly in .claude/skills/, not in agent-os subfolder)
+    # Create skill directory (directly in .claude/skills/, not in a qa-agent-os subfolder)
     local skill_dir="$dest_base/.claude/skills/$skill_name"
     ensure_dir "$skill_dir"
 
@@ -1386,8 +1386,8 @@ create_standard_skill() {
         return 1
     fi
 
-    # Prepend agent-os/ to the standards file path for the file reference
-    local standard_file_path_with_prefix="agent-os/$standards_file"
+    # Prepend qa-agent-os/ to the standards file path for the file reference
+    local standard_file_path_with_prefix="qa-agent-os/$standards_file"
 
     # Read template and replace placeholders
     local skill_content=$(cat "$template_file")

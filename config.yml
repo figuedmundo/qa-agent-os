@@ -1,4 +1,4 @@
-version: 0.1.0
+version: 0.1.1
 base_install: true
 
 
@@ -13,6 +13,15 @@ base_install: true
 # Override this default when running project-install.sh by using the flag --claude-code-commands=true/false
 # ================================================
 claude_code_commands: true
+
+
+# ================================================
+# Do you use Gemini CLI?
+# Set to true to install commands in your project's .gemini/commands/qa-agent-os/ folder
+#
+# Override this default when running project-install.sh by using the flag --gemini-commands true/false
+# ================================================
+gemini_commands: false
 
 
 # ================================================

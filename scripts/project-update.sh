@@ -23,6 +23,7 @@ DRY_RUN="false"
 VERBOSE="false"
 PROFILE=""
 CLAUDE_CODE_COMMANDS=""
+GEMINI_COMMANDS=""
 USE_CLAUDE_CODE_SUBAGENTS=""
 AGENT_OS_COMMANDS=""
 STANDARDS_AS_CLAUDE_CODE_SKILLS=""
@@ -48,6 +49,7 @@ Update QA Agent OS installation in the current project directory.
 Options:
     --profile PROFILE                        Use specified profile (default: from project config)
     --claude-code-commands [BOOL]            Install Claude Code commands (true/false)
+    --gemini-commands [BOOL]                 Install Gemini commands (true/false)
     --use-claude-code-subagents [BOOL]       Use Claude Code subagents with delegation (true/false)
     --agent-os-commands [BOOL]               Install QA Agent OS commands for other tools (true/false)
     --standards-as-claude-code-skills [BOOL] Use Claude Code Skills for standards (true/false)
@@ -88,6 +90,10 @@ parse_arguments() {
                 ;;
             --claude-code-commands)
                 read CLAUDE_CODE_COMMANDS shift_count <<< "$(parse_bool_flag "$CLAUDE_CODE_COMMANDS" "$2")"
+                shift $shift_count
+                ;;
+            --gemini-commands)
+                read GEMINI_COMMANDS shift_count <<< "$(parse_bool_flag "$GEMINI_COMMANDS" "$2")"
                 shift $shift_count
                 ;;
             --use-claude-code-subagents)
@@ -174,18 +180,24 @@ load_configurations() {
     # Command line flags override base config
     EFFECTIVE_PROFILE="${PROFILE:-$BASE_PROFILE}"
     EFFECTIVE_CLAUDE_CODE_COMMANDS="${CLAUDE_CODE_COMMANDS:-$BASE_CLAUDE_CODE_COMMANDS}"
+    EFFECTIVE_GEMINI_COMMANDS="${GEMINI_COMMANDS:-$BASE_GEMINI_COMMANDS}"
     EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS="${USE_CLAUDE_CODE_SUBAGENTS:-$BASE_USE_CLAUDE_CODE_SUBAGENTS}"
     EFFECTIVE_AGENT_OS_COMMANDS="${AGENT_OS_COMMANDS:-$BASE_AGENT_OS_COMMANDS}"
     EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS="${STANDARDS_AS_CLAUDE_CODE_SKILLS:-$BASE_STANDARDS_AS_CLAUDE_CODE_SKILLS}"
     EFFECTIVE_VERSION="$BASE_VERSION"
 
-    # Validate config but suppress warnings (will show after user confirms update)
-    validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" "$EFFECTIVE_PROFILE" "false"
+    validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" \
+        "$EFFECTIVE_GEMINI_COMMANDS" \
+        "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" \
+        "$EFFECTIVE_AGENT_OS_COMMANDS" \
+        "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" \
+        "$EFFECTIVE_PROFILE" "false"
 
     print_verbose "Base configuration:"
     print_verbose "  Version: $BASE_VERSION"
     print_verbose "  Profile: $BASE_PROFILE"
     print_verbose "  Claude Code commands: $BASE_CLAUDE_CODE_COMMANDS"
+    print_verbose "  Gemini commands: $BASE_GEMINI_COMMANDS"
     print_verbose "  Use Claude Code subagents: $BASE_USE_CLAUDE_CODE_SUBAGENTS"
     print_verbose "  QA Agent OS commands: $BASE_AGENT_OS_COMMANDS"
     print_verbose "  Standards as Claude Code Skills: $BASE_STANDARDS_AS_CLAUDE_CODE_SKILLS"
@@ -194,6 +206,7 @@ load_configurations() {
     print_verbose "  Version: $PROJECT_VERSION"
     print_verbose "  Profile: $PROJECT_PROFILE"
     print_verbose "  Claude Code commands: $PROJECT_CLAUDE_CODE_COMMANDS"
+    print_verbose "  Gemini commands: $PROJECT_GEMINI_COMMANDS"
     print_verbose "  Use Claude Code subagents: $PROJECT_USE_CLAUDE_CODE_SUBAGENTS"
     print_verbose "  QA Agent OS commands: $PROJECT_AGENT_OS_COMMANDS"
     print_verbose "  Standards as Claude Code Skills: $PROJECT_STANDARDS_AS_CLAUDE_CODE_SKILLS"
@@ -201,6 +214,7 @@ load_configurations() {
     print_verbose "Effective configuration:"
     print_verbose "  Profile: $EFFECTIVE_PROFILE"
     print_verbose "  Claude Code commands: $EFFECTIVE_CLAUDE_CODE_COMMANDS"
+    print_verbose "  Gemini commands: $EFFECTIVE_GEMINI_COMMANDS"
     print_verbose "  Use Claude Code subagents: $EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS"
     print_verbose "  QA Agent OS commands: $EFFECTIVE_AGENT_OS_COMMANDS"
     print_verbose "  Standards as Claude Code Skills: $EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS"
@@ -327,6 +341,87 @@ update_single_agent_commands() {
         fi
         if [[ $commands_skipped -gt 0 ]]; then
             echo -e "${YELLOW}$commands_skipped commands were not updated and overwritten. To update and overwrite these, re-run with --overwrite-commands flag.${NC}"
+        fi
+    fi
+}
+
+# Update Gemini commands
+update_gemini_commands() {
+    print_status "Updating Gemini commands..."
+    local commands_updated=0
+    local commands_skipped=0
+    local commands_new=0
+
+    while read file; do
+        # Process single-agent command files OR orchestrate-tasks special case
+        if [[ "$file" == commands/*/single-agent/* ]] || [[ "$file" == commands/orchestrate-tasks/orchestrate-tasks.md ]]; then
+            local source=$(get_profile_file "$PROJECT_PROFILE" "$file" "$BASE_DIR")
+            if [[ -f "$source" ]]; then
+                # Handle orchestrate-tasks specially (flat destination)
+                if [[ "$file" == commands/orchestrate-tasks/orchestrate-tasks.md ]]; then
+                    local dest="$PROJECT_DIR/.gemini/commands/qa-agent-os/orchestrate-tasks.toml"
+                    
+                    if should_skip_file "$dest" "$OVERWRITE_ALL" "$OVERWRITE_COMMANDS" "command"; then
+                        SKIPPED_FILES+=("$dest")
+                        ((commands_skipped++)) || true
+                        print_verbose "Skipped: $dest"
+                    else
+                        if [[ -f "$dest" ]]; then
+                            UPDATED_FILES+=("$dest")
+                            ((commands_updated++)) || true
+                            print_verbose "Updated: $dest"
+                        else
+                            NEW_FILES+=("$dest")
+                            ((commands_new++)) || true
+                            print_verbose "New file: $dest"
+                        fi
+                        if [[ "$DRY_RUN" != "true" ]]; then
+                            # Compile without PHASE embedding for orchestrate-tasks
+                            compile_gemini_command "$source" "$dest" "$BASE_DIR" "$PROJECT_PROFILE" ""
+                        fi
+                    fi
+                else
+                    # Only install non-numbered files (e.g., plan-product.md, not 1-product-concept.md)
+                    local filename=$(basename "$file")
+                    if [[ ! "$filename" =~ ^[0-9]+-.*\.md$ ]]; then
+                        # Extract command name (e.g., commands/plan-product/single-agent/plan-product.md -> plan-product.md)
+                        local cmd_name=$(echo "$file" | sed 's|commands/\([^/]*\)/single-agent/.*|\1|')
+                        local dest="$PROJECT_DIR/.gemini/commands/qa-agent-os/$cmd_name.toml"
+
+                        if should_skip_file "$dest" "$OVERWRITE_ALL" "$OVERWRITE_COMMANDS" "command"; then
+                            SKIPPED_FILES+=("$dest")
+                            ((commands_skipped++)) || true
+                            print_verbose "Skipped: $dest"
+                        else
+                            if [[ -f "$dest" ]]; then
+                                UPDATED_FILES+=("$dest")
+                                ((commands_updated++)) || true
+                                print_verbose "Updated: $dest"
+                            else
+                                NEW_FILES+=("$dest")
+                                ((commands_new++)) || true
+                                print_verbose "New file: $dest"
+                            fi
+                            if [[ "$DRY_RUN" != "true" ]]; then
+                                # Compile with PHASE embedding (mode="embed")
+                                compile_gemini_command "$source" "$dest" "$BASE_DIR" "$PROJECT_PROFILE" "embed"
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    done < <(get_profile_files "$PROJECT_PROFILE" "$BASE_DIR" "commands")
+
+    if [[ "$DRY_RUN" != "true" ]]; then
+        if [[ $commands_new -gt 0 ]]; then
+            echo "✓ Added $commands_new Gemini commands"
+        fi
+        if [[ $commands_updated -gt 0 ]]; then
+            echo "✓ Updated $commands_updated Gemini commands"
+        fi
+        if [[ $commands_skipped -gt 0 ]]; then
+            echo -e "${YELLOW}$commands_skipped Gemini commands were not updated and overwritten. To update and overwrite these, re-run with --overwrite-commands flag.${NC}"
         fi
     fi
 }
@@ -560,7 +655,8 @@ update_agent_os_folder() {
 
     # Update the configuration file
     write_project_config "$EFFECTIVE_VERSION" "$PROJECT_PROFILE" \
-        "$PROJECT_CLAUDE_CODE_COMMANDS" "$PROJECT_USE_CLAUDE_CODE_SUBAGENTS" \
+        "$PROJECT_CLAUDE_CODE_COMMANDS" "$PROJECT_GEMINI_COMMANDS" \
+        "$PROJECT_USE_CLAUDE_CODE_SUBAGENTS" \
         "$PROJECT_AGENT_OS_COMMANDS" "$PROJECT_STANDARDS_AS_CLAUDE_CODE_SKILLS"
 
     if [[ "$DRY_RUN" != "true" ]]; then
@@ -576,6 +672,7 @@ perform_update() {
     print_status "Configuration:"
     echo -e "  Profile: ${YELLOW}$PROJECT_PROFILE${NC}"
     echo -e "  Claude Code commands: ${YELLOW}$PROJECT_CLAUDE_CODE_COMMANDS${NC}"
+    echo -e "  Gemini commands: ${YELLOW}$PROJECT_GEMINI_COMMANDS${NC}"
     echo -e "  Use Claude Code subagents: ${YELLOW}$PROJECT_USE_CLAUDE_CODE_SUBAGENTS${NC}"
     echo -e "  Standards as Claude Code Skills: ${YELLOW}$PROJECT_STANDARDS_AS_CLAUDE_CODE_SKILLS${NC}"
     echo -e "  QA Agent OS commands: ${YELLOW}$PROJECT_AGENT_OS_COMMANDS${NC}"
@@ -603,6 +700,12 @@ perform_update() {
         # Install/update Claude Code Skills (uses install function since directory was cleaned)
         install_claude_code_skills
         install_improve_skills_command
+        echo ""
+    fi
+
+    # Update Gemini commands if enabled
+    if [[ "$PROJECT_GEMINI_COMMANDS" == "true" ]]; then
+        update_gemini_commands
         echo ""
     fi
 
@@ -713,6 +816,7 @@ prompt_update_confirmation() {
     elif [[ -n "$PROJECT_CLAUDE_CODE_COMMANDS" ]]; then
         echo "  Profile: ${PROJECT_PROFILE:-default}"
         echo "  Claude Code commands: ${PROJECT_CLAUDE_CODE_COMMANDS:-false}"
+        echo "  Gemini commands: ${PROJECT_GEMINI_COMMANDS:-false}"
         echo "  Use Claude Code subagents: ${PROJECT_USE_CLAUDE_CODE_SUBAGENTS:-false}"
         echo "  QA Agent OS commands: ${PROJECT_AGENT_OS_COMMANDS:-false}"
         echo "  Standards as Claude Code Skills: ${PROJECT_STANDARDS_AS_CLAUDE_CODE_SKILLS:-false}"
@@ -726,6 +830,7 @@ prompt_update_confirmation() {
     echo "  Version: $target_version"
     echo "  Profile: $EFFECTIVE_PROFILE"
     echo "  Claude Code commands: $EFFECTIVE_CLAUDE_CODE_COMMANDS"
+    echo "  Gemini commands: $EFFECTIVE_GEMINI_COMMANDS"
     echo "  Use Claude Code subagents: $EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS"
     echo "  QA Agent OS commands: $EFFECTIVE_AGENT_OS_COMMANDS"
     echo "  Standards as Claude Code Skills: $EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS"
@@ -759,6 +864,9 @@ prompt_update_confirmation() {
     fi
     if [[ "$EFFECTIVE_CLAUDE_CODE_COMMANDS" == "true" ]] || [[ -d "$PROJECT_DIR/.claude/commands/qa-agent-os" ]]; then
         echo "  - .claude/commands/qa-agent-os/"
+    fi
+    if [[ "$EFFECTIVE_GEMINI_COMMANDS" == "true" ]] || [[ -d "$PROJECT_DIR/.gemini/commands/qa-agent-os" ]]; then
+        echo "  - .gemini/commands/qa-agent-os/"
     fi
     if [[ "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" == "true" ]] || [[ -d "$PROJECT_DIR/.claude/skills" ]]; then
         echo "  - .claude/skills/ (QA Agent OS skills)"
@@ -799,6 +907,15 @@ perform_update_cleanup() {
             rm -rf "$PROJECT_DIR/qa-agent-os/commands"
         fi
     fi
+
+    # Delete .gemini/commands/qa-agent-os/ if exists
+    if [[ -d "$PROJECT_DIR/.gemini/commands/qa-agent-os" ]]; then
+        print_status "Removing .gemini/commands/qa-agent-os/"
+        if [[ "$DRY_RUN" != "true" ]]; then
+            rm -rf "$PROJECT_DIR/.gemini/commands/qa-agent-os"
+        fi
+    fi
+
 
     # Delete .claude/agents/qa-agent-os/ if exists
     if [[ -d "$PROJECT_DIR/.claude/agents/qa-agent-os" ]]; then
@@ -896,7 +1013,7 @@ main() {
     if prompt_update_confirmation "$PROJECT_VERSION" "$has_version_diff" "$has_config_diff"; then
         # User confirmed - show any config validation warnings
         echo ""
-        validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" "$EFFECTIVE_PROFILE" "true"
+        validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_GEMINI_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" "$EFFECTIVE_PROFILE" "true"
         echo ""
 
         # Perform cleanup and update

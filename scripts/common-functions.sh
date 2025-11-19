@@ -1046,6 +1046,57 @@ compile_command() {
     compile_agent "$source_file" "$dest_file" "$base_dir" "$profile" "" "$phase_mode"
 }
 
+# Compile command file for Gemini CLI (TOML format)
+compile_gemini_command() {
+    local source_file=$1
+    local dest_file=$2
+    local base_dir=$3
+    local profile=$4
+    local phase_mode=${5:-""}
+
+    # Create a temporary file for the compiled content (Markdown)
+    local temp_md=$(mktemp)
+    
+    # Compile as agent first to get all replacements (conditionals, workflows, standards)
+    compile_agent "$source_file" "$temp_md" "$base_dir" "$profile" "" "$phase_mode"
+    
+    local content=$(cat "$temp_md")
+    rm -f "$temp_md"
+
+    # Extract description
+    local description="QA Agent OS Command"
+    
+    # 1. Try to find the first H1 header (# Title)
+    # We use grep to find the first occurrence, then sed to clean it
+    local h1_header=$(echo "$content" | grep -m 1 "^# " | sed 's/^# //')
+    
+    if [[ -n "$h1_header" ]]; then
+        description="$h1_header"
+    else
+        # 2. Fallback: Use filename converted to Title Case
+        local filename=$(basename "$source_file" .md)
+        # Replace hyphens with spaces and capitalize first letter of each word
+        description=$(echo "$filename" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
+    fi
+
+    # Create TOML content with argument support
+    local toml_content="description = \"$description\"
+
+prompt = \"\"\"
+Context from user arguments: {{args}}
+
+$content
+\"\"\""
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo "$dest_file"
+    else
+        ensure_dir "$(dirname "$dest_file")"
+        echo "$toml_content" > "$dest_file"
+        print_verbose "Compiled Gemini command: $dest_file"
+    fi
+}
+
 # -----------------------------------------------------------------------------
 # Version Functions
 # -----------------------------------------------------------------------------
@@ -1183,6 +1234,7 @@ load_base_config() {
     BASE_VERSION=$(get_yaml_value "$BASE_DIR/config.yml" "version" "0.1.0")
     BASE_PROFILE=$(get_yaml_value "$BASE_DIR/config.yml" "profile" "default")
     BASE_CLAUDE_CODE_COMMANDS=$(get_yaml_value "$BASE_DIR/config.yml" "claude_code_commands" "true")
+    BASE_GEMINI_COMMANDS=$(get_yaml_value "$BASE_DIR/config.yml" "gemini_commands" "false")
     BASE_USE_CLAUDE_CODE_SUBAGENTS=$(get_yaml_value "$BASE_DIR/config.yml" "use_claude_code_subagents" "true")
     BASE_AGENT_OS_COMMANDS=$(get_yaml_value "$BASE_DIR/config.yml" "agent_os_commands" "false")
     BASE_STANDARDS_AS_CLAUDE_CODE_SKILLS=$(get_yaml_value "$BASE_DIR/config.yml" "standards_as_claude_code_skills" "true")
@@ -1198,6 +1250,7 @@ load_project_config() {
     PROJECT_VERSION=$(get_project_config "$PROJECT_DIR" "version")
     PROJECT_PROFILE=$(get_project_config "$PROJECT_DIR" "profile")
     PROJECT_CLAUDE_CODE_COMMANDS=$(get_project_config "$PROJECT_DIR" "claude_code_commands")
+    PROJECT_GEMINI_COMMANDS=$(get_project_config "$PROJECT_DIR" "gemini_commands")
     PROJECT_USE_CLAUDE_CODE_SUBAGENTS=$(get_project_config "$PROJECT_DIR" "use_claude_code_subagents")
     PROJECT_AGENT_OS_COMMANDS=$(get_project_config "$PROJECT_DIR" "agent_os_commands")
     PROJECT_STANDARDS_AS_CLAUDE_CODE_SKILLS=$(get_project_config "$PROJECT_DIR" "standards_as_claude_code_skills")
@@ -1211,15 +1264,16 @@ load_project_config() {
 # Validate configuration
 validate_config() {
     local claude_code_commands=$1
-    local use_claude_code_subagents=$2
-    local agent_os_commands=$3
-    local standards_as_claude_code_skills=$4
-    local profile=$5
-    local print_warnings=${6:-true}  # Default to true if not provided
+    local gemini_commands=$2
+    local use_claude_code_subagents=$3
+    local agent_os_commands=$4
+    local standards_as_claude_code_skills=$5
+    local profile=$6
+    local print_warnings=${7:-true}  # Default to true if not provided
 
     # Validate at least one output is enabled
-    if [[ "$claude_code_commands" != "true" ]] && [[ "$agent_os_commands" != "true" ]]; then
-        print_error "At least one of 'claude_code_commands' or 'agent_os_commands' must be true"
+    if [[ "$claude_code_commands" != "true" ]] && [[ "$gemini_commands" != "true" ]] && [[ "$agent_os_commands" != "true" ]]; then
+        print_error "At least one of 'claude_code_commands', 'gemini_commands', or 'agent_os_commands' must be true"
         exit 1
     fi
 
@@ -1253,9 +1307,10 @@ write_project_config() {
     local version=$1
     local profile=$2
     local claude_code_commands=$3
-    local use_claude_code_subagents=$4
-    local agent_os_commands=$5
-    local standards_as_claude_code_skills=$6
+    local gemini_commands=$4
+    local use_claude_code_subagents=$5
+    local agent_os_commands=$6
+    local standards_as_claude_code_skills=$7
     local dest="$PROJECT_DIR/qa-agent-os/config.yml"
 
     local config_content="version: $version
@@ -1268,6 +1323,7 @@ last_compiled: $(date '+%Y-%m-%d %H:%M:%S')
 # ================================================
 profile: $profile
 claude_code_commands: $claude_code_commands
+gemini_commands: $gemini_commands
 use_claude_code_subagents: $use_claude_code_subagents
 agent_os_commands: $agent_os_commands
 standards_as_claude_code_skills: $standards_as_claude_code_skills"

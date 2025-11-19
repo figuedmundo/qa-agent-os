@@ -23,6 +23,7 @@ DRY_RUN="false"
 VERBOSE="false"
 PROFILE=""
 CLAUDE_CODE_COMMANDS=""
+GEMINI_COMMANDS=""
 USE_CLAUDE_CODE_SUBAGENTS=""
 AGENT_OS_COMMANDS=""
 STANDARDS_AS_CLAUDE_CODE_SKILLS=""
@@ -46,6 +47,7 @@ Install QA Agent OS into the current project directory.
 Options:
     --profile PROFILE                        Use specified profile (default: from config.yml)
     --claude-code-commands [BOOL]            Install Claude Code commands (default: from config.yml)
+    --gemini-commands [BOOL]                 Install Gemini commands (default: from config.yml)
     --use-claude-code-subagents [BOOL]       Use Claude Code subagents (default: from config.yml)
     --agent-os-commands [BOOL]               Install QA Agent OS commands (default: from config.yml)
     --standards-as-claude-code-skills [BOOL] Use Claude Code Skills for standards (default: from config.yml)
@@ -86,6 +88,10 @@ parse_arguments() {
                 ;;
             --claude-code-commands)
                 read CLAUDE_CODE_COMMANDS shift_count <<< "$(parse_bool_flag "$CLAUDE_CODE_COMMANDS" "$2")"
+                shift $shift_count
+                ;;
+            --gemini-commands)
+                read GEMINI_COMMANDS shift_count <<< "$(parse_bool_flag "$GEMINI_COMMANDS" "$2")"
                 shift $shift_count
                 ;;
             --use-claude-code-subagents)
@@ -159,6 +165,7 @@ load_configuration() {
     # Validate configuration using common function (may override EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS if dependency not met)
     # Validate configuration using common function (may override EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS if dependency not met)
     validate_config "$EFFECTIVE_CLAUDE_CODE_COMMANDS" \
+        "$EFFECTIVE_GEMINI_COMMANDS" \
         "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" \
         "$EFFECTIVE_AGENT_OS_COMMANDS" \
         "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS" \
@@ -324,10 +331,10 @@ install_gemini_commands() {
                     if [[ ! "$filename" =~ ^[0-9]+-.*\.md$ ]]; then
                         # Extract command name (e.g., commands/plan-product/single-agent/plan-product.md -> plan-product.md)
                         local cmd_name=$(echo "$file" | sed 's|commands/\([^/]*\)/single-agent/.*|\1|')
-                        local dest="$target_dir/$cmd_name.md"
+                        local dest="$target_dir/$cmd_name.toml"
 
-                        # Compile with PHASE embedding (mode="embed")
-                        local compiled=$(compile_command "$source" "$dest" "$BASE_DIR" "$EFFECTIVE_PROFILE" "embed")
+                        # Compile with PHASE embedding (mode="embed") using Gemini compiler
+                        local compiled=$(compile_gemini_command "$source" "$dest" "$BASE_DIR" "$EFFECTIVE_PROFILE" "embed")
                         if [[ "$DRY_RUN" == "true" ]]; then
                             INSTALLED_FILES+=("$dest")
                         fi
@@ -432,7 +439,7 @@ create_agent_os_folder() {
 
     # Create the configuration file
     local config_file=$(write_project_config "$EFFECTIVE_VERSION" "$EFFECTIVE_PROFILE" \
-        "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_GEMINI_COMMANDS" "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" \
+        "$EFFECTIVE_CLAUDE_CODE_COMMANDS" "$EFFECTIVE_GEMINI_COMMANDS" "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" \
         "$EFFECTIVE_AGENT_OS_COMMANDS" "$EFFECTIVE_STANDARDS_AS_CLAUDE_CODE_SKILLS")
     if [[ "$DRY_RUN" == "true" && -n "$config_file" ]]; then
         INSTALLED_FILES+=("$config_file")
@@ -477,11 +484,13 @@ perform_installation() {
             else
                 install_claude_code_commands_without_delegation
             fi
-            if [[ "$GEMINI_COMMANDS" == "true" ]]; then
-                install_gemini_commands
-            fi
             install_claude_code_skills
             install_improve_skills_command
+        fi
+
+
+        if [[ "$EFFECTIVE_GEMINI_COMMANDS" == "true" ]]; then
+            install_gemini_commands
         fi
 
         # Install QA Agent OS commands if enabled
@@ -514,12 +523,14 @@ perform_installation() {
             else
                 install_claude_code_commands_without_delegation
             fi
-            if [[ "$GEMINI_COMMANDS" == "true" ]]; then
-                install_gemini_commands
-                echo ""
-            fi
             install_claude_code_skills
             install_improve_skills_command
+            echo ""
+        fi
+
+
+        if [[ "$EFFECTIVE_GEMINI_COMMANDS" == "true" ]]; then
+            install_gemini_commands
             echo ""
         fi
 

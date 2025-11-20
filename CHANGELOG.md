@@ -1,7 +1,7 @@
 # Changelog
 
 Get notified of major releases by subscribing here:
-https://buildermethods.com/qa-agent-os
+https://medirect.com/qa-agent-os
 
 ## [0.1.0] - 2025-11-19
 

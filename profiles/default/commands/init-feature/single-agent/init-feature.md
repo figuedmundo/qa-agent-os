@@ -16,5 +16,5 @@ This folder contains:
 - A subdirectory for the first ticket associated with this feature.
 
 NEXT STEP 👉 Run the `/analise-requirements` command for the first ticket to begin the requirement analysis process. For example:
-`/analise-requirements --feature [feature-directory-name] --ticket TWRR-123`
+`/analise-requirements 
 ```

@@ -475,7 +475,7 @@ perform_installation() {
         # Collect files without output
         create_agent_os_folder
         install_standards
-
+        install_templates
         # Install Claude Code files if enabled
         if [[ "$EFFECTIVE_CLAUDE_CODE_COMMANDS" == "true" ]]; then
             if [[ "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" == "true" ]]; then
@@ -513,7 +513,7 @@ perform_installation() {
         install_standards
         echo ""
 
-        # Install Claude Code files if enabled
+        install_templates        # Install Claude Code files if enabled
         if [[ "$EFFECTIVE_CLAUDE_CODE_COMMANDS" == "true" ]]; then
             if [[ "$EFFECTIVE_USE_CLAUDE_CODE_SUBAGENTS" == "true" ]]; then
                 install_claude_code_commands_with_delegation
@@ -553,7 +553,7 @@ perform_installation() {
     else
         print_success "QA Agent OS has been successfully installed in your project!"
         echo ""
-        echo -e "${GREEN}Visit the docs for guides on how to use QA Agent OS: https://buildermethods.com/qa-agent-os${NC}"
+        echo -e "${GREEN}Visit the docs for guides on how to use QA Agent OS: https://medirect.com/qa-agent-os${NC}"
         echo ""
     fi
 }
@@ -628,3 +628,34 @@ main() {
 
 # Run main function
 main "$@"
+
+# Install templates for QA workflow redesign
+install_templates() {
+    if [[ "$DRY_RUN" != "true" ]]; then
+        print_status "Installing templates"
+    fi
+
+    local templates_count=0
+
+    while read file; do
+        if [[ "$file" == templates/* ]]; then
+            local source=$(get_profile_file "$EFFECTIVE_PROFILE" "$file" "$BASE_DIR")
+            local dest="$PROJECT_DIR/qa-agent-os/$file"
+
+            if [[ -f "$source" ]]; then
+                local installed_file=$(copy_file "$source" "$dest")
+                if [[ -n "$installed_file" ]]; then
+                    INSTALLED_FILES+=("$installed_file")
+                    ((templates_count++)) || true
+                fi
+            fi
+        fi
+    done < <(get_profile_files "$EFFECTIVE_PROFILE" "$BASE_DIR" "templates")
+
+    if [[ "$DRY_RUN" != "true" ]]; then
+        if [[ $templates_count -gt 0 ]]; then
+            echo "✓ Installed $templates_count templates in qa-agent-os/templates"
+        fi
+    fi
+}
+

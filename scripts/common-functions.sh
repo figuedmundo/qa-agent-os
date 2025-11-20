@@ -1522,3 +1522,195 @@ install_improve_skills_command() {
         fi
     fi
 }
+
+# =============================================================================
+# NEW UTILITIES FOR QA WORKFLOW REDESIGN (Task Group 1)
+# =============================================================================
+
+# Create folder structure from template file
+create_folder_from_template() {
+    local template_file=$1
+    local feature_name=$2
+    local base_path=$3
+
+    if [[ ! -f "$template_file" ]]; then
+        print_error "Template file not found: $template_file"
+        return 1
+    fi
+
+    # Read template and create directories
+    local normalized_feature=$(normalize_name "$feature_name")
+
+    # Create base feature directory
+    local feature_dir="$base_path/features/$normalized_feature"
+    ensure_dir "$feature_dir"
+    ensure_dir "$feature_dir/documentation"
+
+    print_verbose "Created feature folder structure at: $feature_dir"
+}
+
+# Detect existing features in qa-agent-os/features/ directory
+detect_existing_features() {
+    local features_path=$1
+
+    if [[ ! -d "$features_path" ]]; then
+        return 0
+    fi
+
+    # Find all top-level directories that are features (contain documentation/ or feature-knowledge.md)
+    find "$features_path" -maxdepth 1 -type d ! -name '.' | while read -r dir; do
+        basename "$dir"
+    done | sort
+}
+
+# Detect existing tickets in a feature directory
+detect_existing_tickets() {
+    local feature_path=$1
+
+    if [[ ! -d "$feature_path" ]]; then
+        return 0
+    fi
+
+    # Find all subdirectories that look like tickets (alphanumeric-digits format)
+    find "$feature_path" -maxdepth 1 -type d ! -name '.' ! -name 'documentation' \
+        ! -name 'mockups' ! -name 'visuals' | while read -r dir; do
+        basename "$dir"
+    done | sort
+}
+
+# Prompt user with numbered list options
+prompt_with_options() {
+    local prompt_text=$1
+    shift
+    local options=("$@")
+
+    print_color "$BLUE" "$prompt_text"
+    echo ""
+
+    local count=1
+    for option in "${options[@]}"; do
+        print_color "$YELLOW" "  [$count] $option"
+        ((count++))
+    done
+
+    echo ""
+    read -p "Choose [1-$((count-1))]: " choice
+
+    # Validate choice
+    if [[ ! "$choice" =~ ^[0-9]+$ ]] || [[ $choice -lt 1 ]] || [[ $choice -gt $((count-1)) ]]; then
+        print_error "Invalid selection. Please choose a number between 1 and $((count-1))"
+        return 1
+    fi
+
+    echo "$choice"
+}
+
+# Confirm action with yes/no prompt
+confirm_action() {
+    local message=$1
+    local default=${2:-n}
+
+    local prompt="$message"
+    if [[ "$default" == "y" ]]; then
+        prompt="$prompt [Y/n]: "
+    else
+        prompt="$prompt [y/N]: "
+    fi
+
+    read -p "$prompt" response
+    response="${response:-$default}"
+
+    case "$response" in
+        [yY][eE][sS]|[yY])
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# Detect project root directory
+detect_project_root() {
+    local current_dir=$(pwd)
+
+    while [[ "$current_dir" != "/" ]]; do
+        if [[ -d "$current_dir/qa-agent-os" ]] || [[ -d "$current_dir/.claude" ]]; then
+            echo "$current_dir"
+            return 0
+        fi
+        current_dir=$(dirname "$current_dir")
+    done
+
+    echo "$(pwd)"
+    return 0
+}
+
+# Resolve features path - support both qa-agent-os/features/ and features/ formats
+resolve_features_path() {
+    local project_root=$1
+
+    if [[ -d "$project_root/qa-agent-os/features" ]]; then
+        echo "$project_root/qa-agent-os/features"
+        return 0
+    fi
+
+    if [[ -d "$project_root/features" ]]; then
+        echo "$project_root/features"
+        return 0
+    fi
+
+    echo "$project_root/qa-agent-os/features"
+    return 0
+}
+
+# Validate feature exists
+validate_feature_exists() {
+    local feature_path=$1
+
+    if [[ -d "$feature_path" ]] && ([[ -f "$feature_path/feature-knowledge.md" ]] || [[ -d "$feature_path/documentation" ]]); then
+        return 0
+    fi
+
+    return 1
+}
+
+# Validate ticket exists
+validate_ticket_exists() {
+    local ticket_path=$1
+
+    if [[ -d "$ticket_path" ]] && ([[ -f "$ticket_path/test-plan.md" ]] || [[ -d "$ticket_path/documentation" ]]); then
+        return 0
+    fi
+
+    return 1
+}
+
+# Get templates directory path
+get_templates_dir() {
+    local project_root=$1
+
+    if [[ -d "$project_root/qa-agent-os/templates" ]]; then
+        echo "$project_root/qa-agent-os/templates"
+        return 0
+    fi
+
+    if [[ -d "$project_root/templates" ]]; then
+        echo "$project_root/templates"
+        return 0
+    fi
+
+    echo "$project_root/qa-agent-os/templates"
+    return 0
+}
+
+# Get current date in YYYY-MM-DD format
+get_current_date() {
+    date "+%Y-%m-%d"
+}
+
+# Get current timestamp in YYYY-MM-DD HH:MM:SS format
+get_current_timestamp() {
+    date "+%Y-%m-%d %H:%M:%S"
+}
+

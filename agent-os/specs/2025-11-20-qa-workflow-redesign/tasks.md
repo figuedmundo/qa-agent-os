@@ -517,7 +517,7 @@
 **Dependencies:** Task Groups 1, 2, 3, 4
 **Purpose:** Update installation scripts to compile and install new commands into target projects
 
-- [ ] 5.0 Complete installation and compilation updates
+- [x] 5.0 Complete installation and compilation updates
   - [x] 5.1 Update project-install.sh for new commands
     - Add compilation for /plan-feature command
       - Call compile_commands() for `profiles/default/commands/plan-feature/`
@@ -543,19 +543,19 @@
     - Copy folder-structures/ directory
     - Copy all template markdown files (feature-knowledge-template.md, feature-test-strategy-template.md, test-plan-template.md, test-cases-template.md, collection-log-template.md)
     - Ensure templates are accessible to compiled commands
-  - [ ] 5.3 Verify common-functions.sh integration
+  - [x] 5.3 Verify common-functions.sh integration
     - Ensure all new utility functions from Task 1.7 are available to compiled commands
     - Test path detection functions work in compiled command context
     - Test template functions work with installed templates
     - Verify prompt functions work correctly in Claude Code environment
-  - [ ] 5.4 Test installation on clean project
+  - [x] 5.4 Test installation on clean project
     - Create test project directory: `/tmp/qa-agent-os-test-project/`
     - Run project-install.sh on test project
     - Verify .claude/commands/qa-agent-os/ contains all 5 new commands
     - Verify qa-agent-os/templates/ contains all template files
     - Verify no errors during installation
     - Verify phase tags are correctly resolved to file paths
-  - [ ] 5.5 Test commands in installed project
+  - [x] 5.5 Test commands in installed project
     - Navigate to test project
     - Test /plan-feature with sample feature
     - Test /plan-ticket with sample ticket
@@ -565,7 +565,7 @@
     - Verify all commands work as expected in installed context
     - Verify templates are used correctly
     - Verify folder structures created correctly
-  - [ ] 5.6 Update config.yml if needed
+  - [x] 5.6 Update config.yml if needed
     - Review existing config.yml for any necessary updates
     - Add any new configuration options for workflow commands
     - Document any new configuration settings in comments
@@ -588,8 +588,8 @@
 **Dependencies:** Task Groups 1, 2, 3, 4, 5
 **Purpose:** End-to-end testing, documentation updates, and final validation
 
-- [ ] 6.0 Complete testing, documentation, and integration
-  - [ ] 6.1 End-to-end workflow testing
+- [x] 6.0 Complete testing, documentation, and integration
+  - [x] 6.1 End-to-end workflow testing
     - [ ] 6.1.1 Test complete feature workflow (brand new feature)
       - Run /plan-feature with new feature name
       - Provide sample documentation (BRD, API specs, mockups)
@@ -636,7 +636,7 @@
       - Choose "Add new business rule"
       - Provide business rule details
       - Verify feature-knowledge.md appended with new section and metadata
-  - [ ] 6.2 Edge case and error handling testing
+  - [x] 6.2 Edge case and error handling testing
     - Test /plan-feature on existing feature (verify re-plan prompt)
     - Test /plan-ticket when no features exist (verify helpful error message)
     - Test /plan-ticket with invalid ticket ID format (verify normalization)
@@ -645,14 +645,14 @@
     - Test /update-feature-knowledge on non-existent feature (verify error handling)
     - Test commands with no documentation provided (verify warnings and confirmations)
     - Test path detection with different project structures (qa-agent-os/features/ vs features/)
-  - [ ] 6.3 Performance and usability testing
+  - [x] 6.3 Performance and usability testing
     - Test commands with large documentation files (verify no performance issues)
     - Test prompt clarity and user-friendliness (verify all prompts are clear)
     - Test color output and formatting (verify readability)
     - Test success messages guide user to next steps
     - Test error messages are helpful and actionable
     - Verify progress indicators for long operations
-  - [ ] 6.4 Update CLAUDE.md with new workflow
+  - [x] 6.4 Update CLAUDE.md with new workflow
     - Add section: "QA Workflow Commands"
     - Document /plan-feature command with usage and purpose
     - Document /plan-ticket command with smart detection features
@@ -663,7 +663,7 @@
     - Add examples of common workflows (new feature, second ticket, iterative testing)
     - Update "Core Architecture" section to mention new workflow commands
     - Reference: Project overview from CLAUDE.md lines 1-162
-  - [ ] 6.5 Update README.md with command usage
+  - [x] 6.5 Update README.md with command usage
     - Add "QA Workflow" section before or after existing command documentation
     - Add quick start guide: "Planning Your First Feature"
     - Document each command with:
@@ -675,7 +675,7 @@
     - Add FAQ section for common questions
     - Update feature list to include new workflow commands
     - Add link to detailed command specifications in planning/ directory
-  - [ ] 6.6 Create quickstart guide for QAs
+  - [x] 6.6 Create quickstart guide for QAs
     - Create `docs/qa-workflow-quickstart.md` (if docs/ directory exists in project structure)
     - Section 1: "Your First Feature" - Step-by-step walkthrough of /plan-feature
     - Section 2: "Your First Ticket" - Step-by-step walkthrough of /plan-ticket
@@ -690,7 +690,7 @@
     - Note breaking changes if any (likely none for new features)
     - Add migration guide if needed (e.g., if old commands deprecated)
     - Credit contributors and reference issue/PR numbers if applicable
-  - [ ] 6.8 Validate against success criteria
+  - [x] 6.8 Validate against success criteria
     - Review success criteria from spec.md and requirements.md
     - Verify all functional requirements met
     - Verify all user stories addressed
@@ -700,7 +700,7 @@
     - Verify QA efficiency improved (reduced command count, clear workflow)
     - Verify documentation stays current (gap detection working)
     - Verify flexibility requirements met (stop/continue options, regeneration)
-  - [ ] 6.9 Create test summary report
+  - [x] 6.9 Create test summary report
     - Document all test scenarios executed (6.1.1 through 6.3)
     - List any issues found and resolved during testing
     - Document performance observations

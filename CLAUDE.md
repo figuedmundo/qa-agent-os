@@ -39,17 +39,21 @@ The content layer containing:
 - `testcases/` — Test case structure, generation standards, test case templates
 - `testing/` — API testing, exploratory testing, test plan templates
 
-**`workflows/`** — Multi-step processes for complex tasks
-- `planning/` — Product planning (gather info, create mission)
-- `testing/` — Feature initialization, requirement analysis, test case generation
-- `bug-tracking/` — Bug reporting process
-- `implementation/` — Task list creation
+**`templates/`** — Document templates for feature and ticket planning
+- `feature-knowledge-template.md` — 8-section feature overview template
+- `feature-test-strategy-template.md` — 10-section testing strategy template
+- `test-plan-template.md` — 11-section ticket test plan template
+- `test-cases-template.md` — Detailed test case execution template
+- `collection-log-template.md` — Documentation gathering log
+- `folder-structures/` — Directory structure templates
 
 **`commands/`** — Discrete AI agent commands (compiled into `.claude/commands/qa-agent-os/`)
 - `plan-product/` — Create product mission documentation (Phase 1: gather concepts, Phase 2: create mission)
-- `analise-requirements/` — Analyze requirements and generate test cases (Phase 1: init feature, Phase 2: requirement analysis, Phase 3: generate test cases)
-- `init-feature/` — Initialize directory structure for new feature + ticket
-- `generate-testcases/` — Generate test cases from analyzed requirements
+- `plan-feature/` — Plan entire feature with 4 phases: init structure, gather docs, consolidate knowledge, create test strategy
+- `plan-ticket/` — Plan ticket testing with 5 phases: smart detection, init ticket, gather docs, analyze requirements with gap detection, optional test case generation
+- `generate-testcases/` — Generate or regenerate test cases from test-plan.md
+- `revise-test-plan/` — Update test plans during testing with revision tracking
+- `update-feature-knowledge/` — Manually update feature knowledge (rare)
 - `improve-skills/` — Enhance AI agent capabilities (Claude Code Skills)
 - `integrations/` — Jira and Testmo integration commands
 
@@ -65,20 +69,153 @@ project/
 │   └── agents/qa-agent-os/         ← Claude Code subagents (if enabled)
 ├── qa-agent-os/
 │   ├── standards/                  ← Compiled standards from profiles/default/standards/
+│   ├── templates/                  ← Document templates for planning
 │   ├── product/                    ← User-created product context (mission.md)
 │   └── features/                   ← User-created feature specs (ticket-based structure)
 └── src/                            ← Actual project code
 ```
 
+## QA Workflow Commands
+
+The redesigned QA workflow provides 5 orchestrated commands that handle the complete feature and ticket planning lifecycle:
+
+### `/plan-feature` Command
+**Purpose:** Complete feature planning in one orchestrated command (4 phases)
+
+**Workflow:**
+1. **Phase 1:** Initialize feature folder structure
+2. **Phase 2:** Gather documentation (BRD, API specs, mockups, technical docs)
+3. **Phase 3:** Consolidate knowledge into `feature-knowledge.md` (8 sections)
+4. **Phase 4:** Create `feature-test-strategy.md` (10 sections) with testing approach
+
+**Usage:** `/plan-feature "Feature Name"`
+
+**Creates:**
+```
+features/[feature-name]/
+├── documentation/          # Collected raw documents
+├── feature-knowledge.md    # Consolidates WHAT is being built
+└── feature-test-strategy.md # Defines HOW it will be tested
+```
+
+### `/plan-ticket` Command
+**Purpose:** Plan ticket testing with intelligent feature detection and gap detection (3-5 phases)
+
+**Smart Features:**
+- **Phase 0:** Smart Detection & Routing
+  - Detects existing features automatically
+  - If ticket exists, offers re-execution options: [1] Full re-plan [2] Update plan only [3] Regenerate cases only [4] Cancel
+  - If new ticket, auto-selects feature or prompts for selection
+
+- **Phase 1:** Initialize Ticket Structure
+- **Phase 2:** Gather Ticket Documentation
+- **Phase 3:** Analyze Requirements & Detect Gaps
+  - Compares ticket requirements to feature-knowledge.md
+  - Identifies new rules, APIs, edge cases
+  - Prompts to append gaps to feature knowledge
+
+- **Phase 4:** Generate Test Cases (Optional)
+  - After Phase 3 completes, offers: [1] Generate now [2] Stop for review
+  - Flexible execution: can generate later with `/generate-testcases`
+
+**Usage:** `/plan-ticket [ticket-id]`
+
+**Creates:**
+```
+features/[feature-name]/[ticket-id]/
+├── documentation/          # Ticket-specific documents
+├── test-plan.md           # 11 sections with requirements, coverage, scenarios
+└── test-cases.md          # Detailed executable test cases (if generated)
+```
+
+### `/generate-testcases` Command
+**Purpose:** Generate or regenerate test cases from test-plan.md (standalone)
+
+**Features:**
+- Generate test cases if none exist
+- Regenerate with smart options: [1] Overwrite [2] Append [3] Cancel
+- Supports parameter `/generate-testcases [ticket-id]` or interactive selection
+
+**When to Use:**
+- After reviewing and updating test-plan.md
+- After running `/revise-test-plan` updates
+- Standalone from `/plan-ticket` if you stopped at Phase 3
+
+### `/revise-test-plan` Command
+**Purpose:** Update test-plan.md during testing with change tracking
+
+**Update Types:**
+- [1] New edge case found
+- [2] New test scenario needed
+- [3] Existing scenario needs update
+- [4] New requirement discovered
+- [5] Test data needs adjustment
+
+**Features:**
+- Updates test-plan.md with revision log entries
+- Increments version number
+- Offers to regenerate test cases after update
+- Maintains full traceability of changes
+
+### `/update-feature-knowledge` Command
+**Purpose:** Manually update feature-knowledge.md (rare - usually updated via gap detection)
+
+**Update Types:**
+- [1] Add new business rule
+- [2] Add new API endpoint
+- [3] Update existing information
+- [4] Add edge case documentation
+- [5] Add open question
+
+## QA Workflow Patterns
+
+### Feature-Level Documentation
+Feature-level documents capture the "WHAT" and strategic "HOW" once:
+
+- **feature-knowledge.md** (8 sections)
+  - Consolidates business rules, APIs, edge cases from all sources
+  - Referenced by all tickets in the feature
+  - Updated via gap detection when tickets introduce new information
+
+- **feature-test-strategy.md** (10 sections)
+  - Defines testing approach, tools, environment, risks
+  - Strategic document (not updated per-ticket)
+  - Referenced in test-plan.md to avoid redundancy
+
+### Ticket-Level Documentation
+Ticket-level documents capture specific test planning:
+
+- **test-plan.md** (11 sections)
+  - Contains ticket-specific requirements, scenarios, test data
+  - Inherits strategy from feature-test-strategy.md
+  - Includes revision log for iterative updates during testing
+  - Created by `/plan-ticket` or updated by `/revise-test-plan`
+
+- **test-cases.md**
+  - Detailed, executable test cases
+  - Generated from test-plan.md sections 6-7
+  - Can be regenerated as plan evolves
+  - Created by `/plan-ticket` Phase 4 or `/generate-testcases`
+
+### Gap Detection Pattern
+The smart requirement analysis in `/plan-ticket` Phase 3:
+
+1. Reads ticket documentation
+2. Compares to existing feature-knowledge.md
+3. Identifies gaps (new rules, APIs, edge cases)
+4. If gaps found, prompts user to append to feature-knowledge.md
+5. Appends with metadata for traceability
+6. Ensures feature knowledge stays current without manual effort
+
 ## Data Flow
 
 1. User runs `project-install.sh` → reads `config.yml`
-2. Script accesses `profiles/default/` for standards, workflows, commands
+2. Script accesses `profiles/default/` for standards, commands, templates
 3. `common-functions.sh` compiles Markdown files:
-   - Processes phase tags (`@qa-agent-os/...`)
+   - Processes phase tags (`{{PHASE N: @qa-agent-os/...}}`)
    - Injects standards references
    - Normalizes paths
-4. Output: `.claude/commands/qa-agent-os/` and `qa-agent-os/standards/`
+4. Output: `.claude/commands/qa-agent-os/` and `qa-agent-os/templates/`
 5. AI agent uses compiled commands + product context + standards to perform tasks
 
 ## Common Development Tasks
@@ -86,7 +223,7 @@ project/
 ### Adding a New Command
 1. Create directory: `profiles/default/commands/[command-name]/single-agent/`
 2. Create phase files (e.g., `1-step.md`, `2-step.md`) if multi-phase
-3. Create orchestrator file: `[command-name].md` with phase tags: `@qa-agent-os/commands/[command-name]/1-step.md`
+3. Create orchestrator file: `[command-name].md` with phase tags: `{{PHASE 1: @qa-agent-os/commands/[command-name]/1-step.md}}`
 4. Run `project-install.sh` to compile
 
 ### Adding a New Standard
@@ -94,24 +231,31 @@ project/
 2. Run `project-install.sh` to copy into project's `qa-agent-os/standards/`
 3. Reference in commands using path tags or inline content
 
+### Adding a New Template
+1. Create file: `profiles/default/templates/[template-name].md`
+2. Run `project-install.sh` to copy into project's `qa-agent-os/templates/`
+3. Reference in command phase files using template path or direct inclusion
+
 ### Modifying Installation Logic
 Edit `scripts/project-install.sh` or `scripts/common-functions.sh`. Key functions:
 - `load_configuration()` — Read config.yml
 - `compile_commands()` — Process command Markdown and phase tags
-- `process_phase_tags()` — Replace `@qa-agent-os/` references with actual paths
-- `process_standards()` — Inject standard file references
+- `process_phase_tags()` — Replace `{{PHASE N: @qa-agent-os/...}}` references with actual paths
+- `install_templates()` — Copy templates to project
 
 ### Testing Installation Locally
 ```bash
 # Create a test project directory
 mkdir /tmp/test-project
 cd /tmp/test-project
+git init
 
 # Run installation with current source
-/path/to/qa-agent-os/scripts/project-install.sh
+/path/to/qa-agent-os/scripts/project-install.sh --claude-code-commands true
 
 # Verify output
 ls -la .claude/commands/qa-agent-os/
+ls -la qa-agent-os/templates/
 ls -la qa-agent-os/standards/
 ```
 
@@ -120,13 +264,13 @@ ls -la qa-agent-os/standards/
 ### Phase Tags in Commands
 Commands use phase tags to reference sub-steps:
 ```markdown
-# Phase 1 Command
+# Execution Phases
 
-@qa-agent-os/commands/my-command/1-phase.md
+Follow the numbered instruction files IN SEQUENCE:
 
-# Phase 2 Command
+{{PHASE 1: @qa-agent-os/commands/my-command/1-phase.md}}
 
-@qa-agent-os/commands/my-command/2-phase.md
+{{PHASE 2: @qa-agent-os/commands/my-command/2-phase.md}}
 ```
 
 The `process_phase_tags()` function replaces these with actual file paths during compilation. This allows modular command construction while maintaining clean source files.
@@ -142,21 +286,41 @@ Standards can be injected into commands two ways:
 - Supports quoted values
 - Defaults to config values if not overridden
 
+### Template System
+Templates are:
+- Located in `profiles/default/templates/`
+- Copied to project's `qa-agent-os/templates/` during installation
+- Referenced by path in command phase files
+- Can be customized by projects via `qa-agent-os/templates/` override
+
 ## Entry Points for Development
 
 - **Modifying defaults:** Edit `config.yml`
 - **Adding QA standards:** Create files in `profiles/default/standards/`
 - **Creating commands:** Create files in `profiles/default/commands/`
+- **Adding templates:** Create files in `profiles/default/templates/`
 - **Fixing installation logic:** Edit `scripts/project-install.sh` or `scripts/common-functions.sh`
 - **Creating custom profiles:** Use `scripts/create-profile.sh` or manually create `profiles/[name]/`
 
 ## Git Workflow
 
-The project uses a feature branch approach. Current branch is `update-structure`. Key files frequently modified:
+The project uses a feature branch approach. Current branch is `update-installers`. Key files frequently modified:
 - `README.md` — User documentation
-- `VISION.md` — Core vision document
-- `IMPLEMENTATION_PLAN.md` — Tracks implementation progress
-- `profiles/default/` — All standard content and commands
+- `QA-QUICKSTART.md` — QA workflow quickstart guide
+- `CHANGELOG.md` — Release notes and feature updates
+- `CLAUDE.md` — This file, development guidance
+- `profiles/default/` — All standard content, commands, and templates
 - `scripts/` — Installation and compilation logic
 
-Recent changes focused on aligning installation scripts with the 3-layer context system and fixing broken commands.
+Recent changes focused on implementing the QA Workflow Redesign with 5 orchestrated commands, smart feature detection, gap detection, and flexible test case generation.
+
+## Success Metrics for QA Workflow
+
+The new workflow improves QA efficiency:
+
+- **Command reduction:** 8 commands → 5 orchestrated commands
+- **Planning efficiency:** Single `/plan-ticket` replaces 4 separate commands
+- **Knowledge currency:** Gap detection keeps feature-knowledge.md current
+- **Traceability:** 100% requirement → test case mapping
+- **Flexibility:** Stop/continue options, regeneration, revision tracking
+- **Usability:** Smart detection reduces user input, helpful errors guide users

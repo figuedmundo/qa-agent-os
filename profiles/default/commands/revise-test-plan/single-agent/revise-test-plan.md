@@ -19,6 +19,16 @@ Update test plans during testing when new scenarios, edge cases, or requirements
 - **Test data adjustment** - Need special test data setup
 - **Existing scenario update** - Need to refine approach
 
+## Execution Phases
+
+This is an orchestrated command with 3 phases:
+
+{{PHASE 1: @qa-agent-os/commands/revise-test-plan/1-detect-ticket.md}}
+
+{{PHASE 2: @qa-agent-os/commands/revise-test-plan/2-prompt-update-type.md}}
+
+{{PHASE 3: @qa-agent-os/commands/revise-test-plan/3-apply-update.md}}
+
 ## Revision Types
 
 ### 1. New Edge Case

@@ -19,6 +19,16 @@ Generate or regenerate detailed test cases from a test plan. Can be called stand
 - **Standalone** - Generate or regenerate cases independently
 - **With append mode** - Add new test cases without discarding existing
 
+## Execution Phases
+
+This is an orchestrated command with 3 phases:
+
+{{PHASE 1: @qa-agent-os/commands/generate-testcases/1-select-ticket.md}}
+
+{{PHASE 2: @qa-agent-os/commands/generate-testcases/2-detect-conflicts.md}}
+
+{{PHASE 3: @qa-agent-os/commands/generate-testcases/3-generate-cases.md}}
+
 ## Quick Workflow
 
 ### Scenario 1: Simple Generation

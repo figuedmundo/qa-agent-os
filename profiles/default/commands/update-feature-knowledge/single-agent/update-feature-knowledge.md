@@ -22,6 +22,16 @@ Use this command only for:
 - Answers to open questions
 - Policy or compliance updates
 
+## Execution Phases
+
+This is an orchestrated command with 3 phases:
+
+{{PHASE 1: @qa-agent-os/commands/update-feature-knowledge/1-detect-feature.md}}
+
+{{PHASE 2: @qa-agent-os/commands/update-feature-knowledge/2-prompt-update-type.md}}
+
+{{PHASE 3: @qa-agent-os/commands/update-feature-knowledge/3-apply-update.md}}
+
 ## Update Types
 
 1. **Add business rule** - New business logic documented

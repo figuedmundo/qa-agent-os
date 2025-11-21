@@ -2,27 +2,56 @@
 
 ## Initialize the Feature Folder
 
-I will help you initialize the folder structure for your feature. Let me start by understanding what feature you want to plan.
+This phase creates the complete directory structure for your feature.
 
-**What is the name of the feature you want to plan?**
+### Get Feature Name
+
+If not already provided, ask the user:
+
+```
+What is the name of the feature you want to plan?
 
 Please provide the feature name (e.g., "TWRR", "Portfolio Analytics", "Payment Processing"):
+```
 
-[Once you provide the feature name, I will:]
+Once you have the feature name, proceed to initialization.
 
-1. Normalize the feature name (lowercase, hyphens, remove special characters)
-2. Create the feature directory structure:
-   ```
-   features/[feature-name]/
-     documentation/
-   ```
-3. Confirm the structure was created successfully
-4. Proceed to Phase 2 to gather documentation
+### Execute Feature Initialization Workflow
 
-**Key Points:**
-- Feature names are case-insensitive and will be normalized
+{{workflows/testing/initialize-feature}}
+
+The workflow will:
+- Normalize the feature name (lowercase, hyphens, remove special characters)
+- Create the feature directory: `qa-agent-os/features/[normalized-name]`
+- Create the documentation subdirectory: `qa-agent-os/features/[normalized-name]/documentation`
+- Generate README.md with feature information and directory structure guide
+- Return the feature path for subsequent phases
+
+### Result
+
+```
+Feature folder initialized successfully!
+
+Feature: [User-provided Feature Name]
+Location: qa-agent-os/features/[normalized-name]
+
+Structure created:
+  features/[normalized-name]/
+    documentation/    (for BRD, API specs, mockups)
+    README.md         (feature overview)
+
+FEATURE_PATH=qa-agent-os/features/[normalized-name]
+```
+
+### Key Points
+
+- Feature names are normalized to lowercase kebab-case
 - The `documentation/` folder will store raw source documents
-- After this phase, you'll gather all stakeholder documentation
-- Then we'll consolidate that into feature-knowledge.md
+- README.md provides an overview of the feature structure
+- The FEATURE_PATH variable is passed to subsequent phases
 
-Once you've provided the feature name, I'll create the folder structure and we can proceed to Phase 2.
+### Next Steps
+
+Phase 2 will gather all feature documentation (BRD, API specs, mockups) and store them in the documentation/ folder.
+
+Proceed to Phase 2.

@@ -4,20 +4,25 @@
 
 You now have the option to generate detailed test cases from the test plan, or stop to review the plan first.
 
-**Your choices:**
+### Variables from Previous Phases
 
-### Option 1: Generate Test Cases Now
+Set by previous phases:
+- **TICKET_PATH**: `qa-agent-os/features/[feature]/[ticket-id]`
+- **TEST_PLAN_PATH**: `[ticket-path]/test-plan.md`
+- **MODE**: `create` (always create for new test cases in this phase)
 
-```
-[1] Continue to Phase 4: Generate test cases now
-```
+### Execute Test Case Generation Workflow
 
-I will:
-1. Read your test-plan.md
-2. Extract scenarios from Section 6 (Test Scenarios & Cases)
-3. Extract test data from Section 7 (Test Data Requirements)
-4. Extract coverage requirements from Section 5 (Test Coverage Matrix)
-5. Generate detailed executable test cases in `test-cases.md`
+{{workflows/testing/testcase-generation}}
+
+The workflow will:
+- Read your test-plan.md from `[test-plan-path]`
+- Extract scenarios from Section 6 (Test Scenarios & Cases)
+- Extract test data from Section 7 (Test Data Requirements)
+- Extract coverage requirements from Section 5 (Test Coverage Matrix)
+- Generate detailed executable test cases in `test-cases.md`
+
+### Test Case Structure
 
 Each test case will include:
 - Test ID, Type, Priority, Requirement link
@@ -29,87 +34,54 @@ Each test case will include:
 - Checkboxes for execution results (Pass/Fail/Blocked)
 - Space for notes and defect links
 
-**Coverage includes:**
-- Positive tests (happy path)
-- Negative tests (error handling)
-- Edge cases (boundary values)
-- Dependency failure scenarios (external service errors)
+### Coverage
 
-**Result:**
-- `features/[feature-name]/[ticket-id]/test-cases.md` created
-- Ready for immediate test execution
+The workflow generates:
+- **Positive tests** (happy path)
+- **Negative tests** (error handling)
+- **Edge cases** (boundary values)
+- **Dependency failure scenarios** (external service errors)
+
+### Result
+
+```
+Test cases generated successfully!
+
+Output: features/[feature-name]/[ticket-id]/test-cases.md
+
+Total test cases: [N]
+  - Positive tests: [N]
+  - Negative tests: [N]
+  - Edge cases: [N]
+  - Dependency failures: [N]
+
+Ready for immediate test execution!
+```
+
+The test-cases.md includes:
 - Test execution summary table for tracking progress
+- Detailed test case specifications
+- Test data reference section
+- Coverage analysis
+- Automation recommendations
 
 ---
 
-### Option 2: Stop & Review First
+## Completion
 
 ```
-[2] Stop here (review test plan first, generate test cases later)
+Ticket planning complete!
+
+Created:
+- Test plan: features/[feature-name]/[ticket-id]/test-plan.md
+- Test cases: features/[feature-name]/[ticket-id]/test-cases.md
+
+Feature knowledge updated: [yes/no]
+
+NEXT STEPS:
+- Review test cases for completeness
+- Execute tests and track results
+- Report bugs using /report-bug (when available)
+
+Good luck with your testing!
 ```
-
-I will:
-1. Create `features/[feature-name]/[ticket-id]/test-plan.md` only
-2. NOT create test-cases.md
-3. Exit the command with a helpful message
-
-**When to choose this option:**
-- You want to review the test plan with stakeholders first
-- You need additional information from the Product Owner
-- You want to refine test scenarios before generating cases
-- You prefer to review test coverage before committing to cases
-
-**Generating test cases later:**
-
-When you're ready to generate test cases, run:
-```bash
-/generate-testcases
-```
-
-This will:
-- Ask which ticket to generate cases for
-- Read the existing test-plan.md
-- Generate test-cases.md from it
-
-You can do this anytime:
-- Immediately after planning
-- Days or weeks later
-- After discussing with stakeholders
-- After getting additional requirements
-
----
-
-## Making Your Choice
-
-**Test plan is now ready at:**
-```
-features/[feature-name]/[ticket-id]/test-plan.md
-```
-
-**Choose your option:**
-
-```
-Options:
-  [1] Continue to Phase 4: Generate test cases now
-  [2] Stop here (review test plan first, generate test cases later)
-
-Choose [1/2]:
-```
-
-**Why This Flexibility Matters:**
-
-Real-world QA workflows often need time to:
-- Review requirements with stakeholders
-- Get clarification from developers
-- Refine edge cases
-- Prioritize test coverage
-
-By allowing a stop point after the test plan, you can:
-- Take time for proper review
-- Gather additional information
-- Refine your approach
-- Generate cases when you're confident
-
-The test plan is comprehensive and ready. Generate cases whenever you're ready.
-
-What would you like to do?

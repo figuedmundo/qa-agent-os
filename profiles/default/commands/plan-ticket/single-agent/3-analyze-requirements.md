@@ -1,100 +1,85 @@
 # Phase 3: Analyze Requirements & Detect Gaps
 
-## Intelligent Gap Detection & Test Plan Creation
+## Intelligent Requirement Analysis
 
-I will now analyze the ticket requirements against the feature knowledge to detect any gaps and create a comprehensive test plan.
+This phase analyzes ticket requirements against feature knowledge and creates a comprehensive test plan.
 
-**What I'm doing:**
+### Variables from Previous Phases
 
-### Step 1: Read All Available Information
+Set by previous phases:
+- **TICKET_PATH**: `qa-agent-os/features/[feature]/[ticket-id]`
+- **FEATURE_PATH**: `qa-agent-os/features/[feature]`
+- **FEATURE_KNOWLEDGE_PATH**: `[feature-path]/feature-knowledge.md`
+- **FEATURE_STRATEGY_PATH**: `[feature-path]/feature-test-strategy.md`
 
-- Ticket documentation from `documentation/` directory
-- Feature knowledge from `../feature-knowledge.md`
-- Feature test strategy from `../feature-test-strategy.md`
+### Execute Requirement Analysis Workflow
 
-### Step 2: Analyze Ticket Requirements
+{{workflows/testing/requirement-analysis}}
 
-Extract and organize:
-- Main objectives and acceptance criteria
-- Business rules specific to this ticket
-- API endpoints or technical details
-- Input/output specifications
-- Edge cases or special handling
+The workflow will:
+- Read ticket documentation from `[ticket-path]/documentation/`
+- Read feature knowledge and test strategy
+- Analyze ticket requirements (objectives, business rules, APIs, edge cases)
+- Compare ticket requirements against feature knowledge
+- Detect gaps (new business rules, APIs, edge cases not in feature knowledge)
+- Prompt to update feature-knowledge.md if gaps found
+- Create comprehensive test-plan.md with 11 sections
 
-### Step 3: Compare Against Feature Knowledge
+**Gap Detection:**
 
-Check if ticket introduces:
-- **New business rules** not in feature-knowledge.md
-- **New API endpoints** not documented before
-- **New calculations** or technical requirements
-- **New edge cases** or constraints
-- **New user flows** or interactions
-
-### Step 4: Gap Detection & Feature Knowledge Update
-
-**If I find gaps, I'll prompt you:**
+If the workflow finds new information not documented in feature-knowledge.md, it will prompt:
 
 ```
-I found new information not in feature-knowledge.md:
+Gap Detection: I found new information not in feature-knowledge.md
 
-- New business rule: [Description]
-- New API endpoint: POST /api/[endpoint]
-- New edge case: [Description]
+New Business Rule:
+- [Description]
+
+New API Endpoint:
+- POST /api/[endpoint]
 
 Would you like me to append this to feature-knowledge.md? [y/n]
 ```
 
-**If you choose YES:**
-- I'll append a new section to feature-knowledge.md with format:
-  ```markdown
-  ## [Section added from ticket [ticket-id] on [date]]
+If you choose **yes**, the workflow updates feature knowledge with traceability metadata.
 
-  ### [Topic]
-  [Content from your ticket]
+### Post-Workflow Actions
 
-  **Source:** Ticket [ticket-id]
-  **Added:** [date] during ticket requirement analysis
-  ```
-- This maintains traceability - you can always see which ticket introduced which requirement
+After workflow completes, prompt user:
 
-**If you choose NO:**
-- Feature knowledge remains unchanged
-- Test plan will focus only on what's in this ticket
-
-### Step 5: Create Test Plan
-
-I'll create `features/[feature-name]/[ticket-id]/test-plan.md` with:
-
-1. **References** - Links to feature docs and ticket sources
-2. **Ticket Overview** - Summary and acceptance criteria
-3. **Test Scope** - What will/won't be tested
-4. **Testable Requirements** - Detailed breakdown with inputs/outputs
-5. **Test Coverage Matrix** - Requirement → Test Case traceability
-6. **Test Scenarios & Cases** - Positive, negative, edge cases
-7. **Test Data Requirements** - Data needed for testing
-8. **Environment Setup** - URLs, accounts, configuration
-9. **Execution Timeline** - Dates and milestones
-10. **Entry/Exit Criteria** - When testing can start/end
-11. **Revisions** - Change log (Version 1.0 entry created)
-
-**Key Points:**
-
-- Test plan inherits strategy from `feature-test-strategy.md`
-- Test plan focuses on this ticket's specific requirements
-- All referenced documents are linked for easy access
-- Revision log tracks changes for future updates
-
-**Next Phase:**
-
-After test plan is created, you'll be offered:
 ```
+Test plan created successfully!
+
+Location: [ticket-path]/test-plan.md
+Version: 1.0
+Sections: 11
+
+Feature knowledge updated: [yes/no]
+
 Options:
   [1] Continue to Phase 4: Generate test cases now
   [2] Stop here (review test plan first, generate test cases later)
+
+Choose [1/2]:
 ```
 
-Choose based on your needs:
-- **Option 1** - Generate detailed test cases immediately
-- **Option 2** - Review and refine test plan, generate cases later with `/generate-testcases`
+**If user chooses [1]:** Proceed to Phase 4
+**If user chooses [2]:** Exit command with helpful message:
 
-Analyzing requirements now...
+```
+Ticket planning paused for review.
+
+Created:
+- Test plan: [ticket-path]/test-plan.md
+
+When ready to generate test cases, run:
+  /generate-testcases
+
+This allows you to:
+- Review the test plan with stakeholders
+- Refine test scenarios
+- Get additional clarification
+- Generate cases when confident
+
+Good luck with your testing!
+```

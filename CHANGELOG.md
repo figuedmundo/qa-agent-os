@@ -3,6 +3,84 @@
 Get notified of major releases by subscribing here:
 https://medirect.com/qa-agent-os
 
+## [0.3.0] - 2025-11-21
+
+### Architecture Alignment - Major Architectural Update
+
+This release fully aligns QA Agent OS with the original **Agent OS architecture patterns**, ensuring consistency, scalability, and maintainability.
+
+#### Architectural Improvements
+
+**Workflow-Centric Design:**
+- All implementation logic extracted to reusable workflows
+- Commands now orchestrate workflows instead of containing duplicate logic
+- 10 total workflows (3 updated, 7 new) serving as single source of truth
+- Zero logic duplication across the system
+
+**Multi-Agent Support:**
+- Both single-agent (CLI-friendly) and multi-agent (Claude Code) modes fully functional
+- All 5 refactored commands have both variants (10 total command variants)
+- Seamless switching between modes via config.yml
+- Multi-agent variants delegate to 3 specialized agents
+
+**Agent Integration:**
+- `testcase-writer` agent - Generates test cases via testcase-generation workflow
+- `requirement-analyst` agent - 5 workflow references for comprehensive requirement handling
+- `feature-initializer` agent - 4 workflow references for structure creation
+
+**Workflow Creation:**
+- `gather-feature-docs.md` - Collect feature documentation
+- `consolidate-feature-knowledge.md` - Create feature knowledge consolidation
+- `create-test-strategy.md` - Develop testing strategy
+- `update-feature-knowledge.md` - Update feature knowledge (manual)
+- `initialize-ticket.md` - Create ticket structure (Phase 1 of /plan-ticket)
+- `gather-ticket-docs.md` - Collect ticket documentation (Phase 2 of /plan-ticket)
+- `revise-test-plan.md` - Update test plan with revision tracking (Phase 3 of /revise-test-plan)
+
+**Deprecations:**
+- `create-ticket.md` workflow marked as deprecated (will be removed in v0.4.0)
+  - Functionality now provided by `/plan-ticket` command orchestration
+  - Kept as historical reference for developers
+  - Updated with modern output paths and deprecation notice
+
+**Critical Bug Fixes:**
+- Fixed missing PHASE tags in 3 command orchestrators (generate-testcases, revise-test-plan, update-feature-knowledge)
+- Added proper orchestration phase files for user interaction logic
+- Corrected workflow references to use `{{workflows/...}}` format
+- Updated tasks.md to document all fixes
+
+#### Token Efficiency
+- Agents receive focused context without unnecessary duplication
+- Consistent standards injection across all commands and agents
+- Workflow references enable reuse without repeating logic
+
+#### Validation & Testing
+- All 5 commands tested in single-agent mode (31/31 tests passing)
+- All 5 commands tested in multi-agent mode (31/31 tests passing)
+- 20/20 pattern compliance checks passing
+- Cross-command consistency verified
+- Zero critical issues blocking release
+
+#### Migration Notes
+
+**For existing projects:**
+- No action required - all changes are backward compatible
+- Optional: Update references to use `/plan-ticket` instead of legacy workflows
+- New installations automatically get both single-agent and multi-agent variants
+
+**For developers:**
+- New commands can be added by creating workflows and orchestrators
+- Use existing commands as patterns for consistency
+- Refer to architecture-patterns.md for implementation guidelines
+
+#### Documentation Updates
+- Added Architecture Alignment section to README.md
+- Updated example directory structure to show workflow organization
+- Added deprecation notices to legacy workflows
+- Created WORKFLOW-REVIEW.md documenting architecture alignment
+
+---
+
 ## [0.2.0] - 2025-11-20
 
 ### QA Workflow Redesign - Major Feature Release

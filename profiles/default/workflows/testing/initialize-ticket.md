@@ -10,6 +10,19 @@ This workflow creates the folder structure for a new ticket within a feature.
 
 **Note:** The placeholder `[feature-path]` refers to the full path like `qa-agent-os/features/feature-name`. The placeholder `[ticket-id]` refers to the ticket identifier (e.g., WYX-123).
 
+## Integration with /plan-ticket Command
+
+This workflow is executed as **Phase 1** of the `/plan-ticket` command:
+
+- **Single-Agent Mode:** Referenced directly via `{{PHASE 1: @qa-agent-os/commands/plan-ticket/1-init-ticket.md}}`
+  - Users run: `/plan-ticket [ticket-id]`
+  - This workflow is invoked automatically
+
+- **Multi-Agent Mode:** Delegated to the **feature-initializer** agent
+  - Users run: `/plan-ticket [ticket-id]`
+  - The feature-initializer agent executes this workflow
+  - Command orchestrator handles context and user interaction
+
 ---
 
 ## Workflow

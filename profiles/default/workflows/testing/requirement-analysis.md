@@ -1,108 +1,353 @@
 # Requirement Analysis Workflow
 
-This workflow guides the agent in performing a detailed analysis of the requirements for a specific ticket.
+This workflow analyzes ticket requirements, performs gap detection against feature knowledge, and creates a comprehensive test plan.
 
 ## Core Responsibilities
 
-1.  **Context Gathering**: Understand the high-level product mission.
-2.  **Input Analysis**: Process the BRD, PRD, or feature description provided by the user.
-3.  **Clarification**: Ask targeted questions to resolve ambiguities and gather visual assets.
-4.  **Documentation**: Save all gathered information into a structured `requirements.md` file within the ticket's directory.
+1. **Read Documentation**: Read ticket documentation and feature context
+2. **Analyze Requirements**: Extract and organize ticket requirements
+3. **Gap Detection**: Compare ticket requirements against feature knowledge to identify new information
+4. **Feature Knowledge Update**: Prompt to update feature-knowledge.md if gaps are found
+5. **Create Test Plan**: Generate comprehensive test-plan.md with 11 sections
 
-**Note:** The placeholder `[ticket-path]` in this workflow refers to the full path to the ticket being analyzed, for example: `qa-agent-os/features/2025-11-19-feature-name/TICKET-123`.
+**Note:** The placeholder `[ticket-path]` refers to the full path to the ticket, for example: `qa-agent-os/features/feature-name/TICKET-123`.
+
+**Note:** The placeholder `[feature-knowledge-path]` refers to the path to feature-knowledge.md, for example: `qa-agent-os/features/feature-name/feature-knowledge.md`.
+
+**Note:** The placeholder `[feature-strategy-path]` refers to the path to feature-test-strategy.md, for example: `qa-agent-os/features/feature-name/feature-test-strategy.md`.
 
 ---
 
 ## Workflow
 
-### Step 1: Understand Product Context
+### Step 1: Read All Available Information
 
-Before analyzing the specific ticket, understand the broader product context. This will help you ask more relevant questions and ensure the feature aligns with overall product goals.
+Read ticket and feature documentation:
 
-1.  **Read Product Mission**: Load and review `qa-agent-os/product/mission.md` to understand:
-    -   The product's overall mission and purpose.
-    -   Target users and their primary use cases.
-    -   Core problems the product aims to solve.
-    -   The **Product Areas & Team Ownership** table (e.g., Cows = Investments, Chicks = Cards & Onboarding) so you can route open questions to the right squad.
+```bash
+# Read ticket documentation
+TICKET_DOCS="[ticket-path]/documentation/"
+ls -la "$TICKET_DOCS"
 
-### Step 2: Analyze Initial Requirements
+# Read feature knowledge
+FEATURE_KNOWLEDGE="[feature-knowledge-path]"
+cat "$FEATURE_KNOWLEDGE"
 
-1.  Ask the user for the Product Requirements Document (PRD), feature description, or any other relevant information for the ticket.
-2.  You can also search for a high-level BRD in the feature's parent `documentation/` folder.
-
-### Step 3: Generate First Round of Questions
-
-Based on the initial requirements, generate 4-8 targeted, **numbered** questions to explore the requirements and suggest reasonable defaults.
-
-**CRITICAL: Always include the visual asset request at the end of your questions.**
-
-**Guidelines for Questions:**
-- Frame questions as "I'm assuming X, is that correct?" to make them easy to answer.
-- Propose sensible assumptions based on best practices.
-- Always end with an open-ended question about what might be out of scope.
-
-**Required Output Format:**
-```
-Based on the requirements for this ticket, I have some clarifying questions:
-
-1. I assume [specific assumption about a requirement]. Is that correct, or should [alternative approach] be considered?
-2. I'm thinking [specific technical or user flow approach]. Should we proceed with this, or is there another preferred method?
-3. (Continue with your numbered questions...)
-[Last question about what is out of scope.]
-
----
-**Visual Assets Request:**
-Do you have any design mockups, wireframes, or screenshots that could help guide the testing for this ticket?
-
-If yes, please place them in the ticket's documentation folder: `[ticket-path]/documentation/`
+# Read feature test strategy
+FEATURE_STRATEGY="[feature-strategy-path]"
+cat "$FEATURE_STRATEGY"
 ```
 
-**After outputting these questions, STOP and wait for the user's response.**
+### Step 2: Analyze Ticket Requirements
 
-### Step 4: Process User's Answers & Visuals
+Extract and organize ticket-specific information:
 
-After receiving the user's answers:
+**Main Objectives:**
+- What is the ticket trying to accomplish?
+- What are the acceptance criteria?
 
-1.  **Store the Answers**: Keep the user's exact answers for later documentation.
-2.  **Check for Visuals**: Run the following `ls` command to check for visual assets in the ticket's documentation folder, even if the user didn't mention any.
-    ```bash
-    # List all image files in the ticket's documentation folder.
-    ls -1 "[ticket-path]/documentation/" | grep -E '\.(png|jpg|jpeg|gif|svg|pdf)$' || echo "No visual files found"
-    ```
-3.  **Analyze Visuals**: If files are found, analyze each one and document your key observations. Note if they appear to be low-fidelity (e.g., wireframes, sketches).
+**Business Rules:**
+- Ticket-specific business logic
+- Calculations or validations
+- Conditional behavior
 
-### Step 5: Save Complete Requirements
+**Technical Details:**
+- API endpoints used or modified
+- Input/output specifications
+- Data transformations
 
-After all questions are answered, compile all the information you have gathered into a single file named `requirements.md` inside the ticket's `planning` directory: `[ticket-path]/planning/requirements.md`.
+**Edge Cases:**
+- Boundary values
+- Error conditions
+- Special handling scenarios
 
-Use the following Markdown structure for the file:
+**User Flows:**
+- Step-by-step user interactions
+- Screen transitions
+- User inputs and system responses
+
+### Step 3: Compare Against Feature Knowledge - Gap Detection
+
+Compare ticket requirements against existing feature-knowledge.md to identify gaps.
+
+**Check for:**
+
+1. **New Business Rules** - Logic not documented in feature knowledge
+2. **New API Endpoints** - Endpoints not in Section 4 of feature-knowledge.md
+3. **New Calculations** - Technical requirements not documented
+4. **New Edge Cases** - Scenarios not covered in Section 6 of feature-knowledge.md
+5. **New User Flows** - Interactions not in Section 3 of feature-knowledge.md
+
+**For each gap found:**
+- Document the gap type
+- Note the specific new information
+- Reference the source (ticket documentation)
+
+### Step 4: Prompt for Feature Knowledge Update
+
+**If gaps are found:**
+
+Prompt the user with a clear summary of what's new:
+
+```
+Gap Detection: I found new information not in feature-knowledge.md
+
+New Business Rule:
+- [Description of new business logic]
+- Source: [ticket documentation reference]
+
+New API Endpoint:
+- POST /api/[endpoint]
+- [Description of endpoint purpose]
+- Source: [ticket documentation reference]
+
+New Edge Case:
+- [Description of edge case]
+- Source: [ticket documentation reference]
+
+Would you like me to append this to feature-knowledge.md? [y/n]
+```
+
+**If user chooses YES:**
+
+1. Read current feature-knowledge.md
+2. Append new information to appropriate sections:
+   ```markdown
+   ## [Section updated from ticket [ticket-id] on [date]]
+
+   ### [Topic Name]
+   [Content from ticket]
+
+   **Source:** Ticket [ticket-id]
+   **Added:** [date] during ticket requirement analysis
+   **Type:** [Business Rule|API Endpoint|Edge Case|User Flow|Calculation]
+   ```
+3. Save updated feature-knowledge.md
+4. Confirm update to user
+
+**If user chooses NO:**
+- Continue without updating feature knowledge
+- Note in test plan that ticket has additional requirements
+
+### Step 5: Create Test Plan
+
+Create comprehensive test-plan.md at `[ticket-path]/test-plan.md` with 11 sections:
 
 ```markdown
-# Requirements for Ticket: [Ticket ID]
+# Test Plan: [Ticket ID]
 
-## 1. Initial Description
-(User's original description of the ticket requirements)
+**Created:** [Date]
+**Version:** 1.0
+**QA Analyst:** [Auto-detected or TBD]
 
-## 2. Requirements Discussion
+---
 
-### Round 1 Questions
+## 1. References
 
-**Q1:** (First question you asked)
-**A:** (User's answer)
+**Feature Documentation:**
+- Feature Knowledge: `[relative-path-to-feature-knowledge.md]`
+- Feature Test Strategy: `[relative-path-to-feature-test-strategy.md]`
 
-**Q2:** (Second question you asked)
-**A:** (User's answer)
+**Ticket Documentation:**
+- Ticket folder: `[ticket-path]/documentation/`
+- [List all documents found in ticket documentation folder]
 
-(Continue for all questions)
+**Related Tickets:**
+- [List related tickets if mentioned in documentation]
 
-## 3. Visual Assets
+---
 
-### Files Found:
-- `filename.png`: (Your description of what the image shows)
-- `filename2.jpg`: (Key elements you observed from your analysis)
+## 2. Ticket Overview
 
-(If no files were found, state: "No visual assets were provided for this ticket.")
+**Summary:**
+[Brief description of what this ticket accomplishes]
 
-## 4. Final Requirements Summary
-(Provide a concise, bulleted summary of the final, agreed-upon requirements for the ticket based on all the information gathered.)
+**Acceptance Criteria:**
+- [AC 1]
+- [AC 2]
+- [AC N]
+
+**Out of Scope:**
+- [What will NOT be tested in this ticket]
+
+---
+
+## 3. Test Scope
+
+**In Scope:**
+- [What will be tested]
+- [Features covered]
+- [User flows tested]
+
+**Out of Scope:**
+- [What will NOT be tested]
+- [Deferred to other tickets]
+- [Known limitations]
+
+**Testing Types:**
+- [ ] Functional Testing
+- [ ] API Testing
+- [ ] UI Testing
+- [ ] Integration Testing
+- [ ] Performance Testing (if applicable)
+- [ ] Security Testing (if applicable)
+
+---
+
+## 4. Testable Requirements
+
+Break down requirements into testable items:
+
+### REQ-01: [Requirement Name]
+**Description:** [Detailed description]
+**Priority:** [High|Medium|Low]
+**Input:** [What goes in]
+**Expected Output:** [What comes out]
+**Business Rules:** [Applicable rules from feature knowledge]
+
+### REQ-02: [Requirement Name]
+[Continue for all requirements]
+
+---
+
+## 5. Test Coverage Matrix
+
+| Requirement ID | Positive Tests | Negative Tests | Edge Cases | Dependency Failures |
+|----------------|---------------|----------------|------------|---------------------|
+| REQ-01         | TC-01         | TC-02          | TC-03      | TC-04              |
+| REQ-02         | TC-05         | TC-06          | TC-07      | -                  |
+
+**Coverage Goals:**
+- All requirements must have at least 1 positive test
+- All requirements must have at least 1 negative test
+- All edge cases identified must have test coverage
+- All dependency failures must be tested
+
+---
+
+## 6. Test Scenarios & Cases
+
+### Positive Tests (Happy Path)
+**TC-01: [Scenario Name]**
+- **Objective:** [What are we testing]
+- **Preconditions:** [Setup needed]
+- **Test Data:** [Data reference from Section 7]
+- **Expected Result:** [What should happen]
+
+### Negative Tests (Error Handling)
+**TC-02: [Scenario Name]**
+[Similar structure as positive tests]
+
+### Edge Cases (Boundary Values)
+**TC-03: [Scenario Name]**
+[Similar structure]
+
+### Dependency Failure Tests
+**TC-04: [Scenario Name]**
+- **Objective:** Test behavior when [external service] fails
+- **Simulated Failure:** [What dependency will fail]
+- **Expected Result:** [Graceful degradation or error message]
+
+---
+
+## 7. Test Data Requirements
+
+| Data Set ID | Description | Values | Usage |
+|-------------|-------------|--------|-------|
+| TD-01       | [Data description] | [Sample values] | Used in TC-01, TC-02 |
+| TD-02       | [Data description] | [Sample values] | Used in TC-03 |
+
+**Special Data Needs:**
+- [Any specific test accounts needed]
+- [Any mock data to be created]
+- [Any production-like data required]
+
+---
+
+## 8. Environment Setup
+
+**Test Environment URLs:**
+- Dev: [URL if applicable]
+- Staging: [URL if applicable]
+- UAT: [URL if applicable]
+
+**Test Accounts:**
+- [Account types needed]
+- [Permissions required]
+
+**Configuration:**
+- [Any feature flags to enable]
+- [Any environment variables]
+
+**Dependencies:**
+- [External services needed]
+- [Mock services to configure]
+
+---
+
+## 9. Execution Timeline
+
+| Phase | Start Date | End Date | Status |
+|-------|-----------|----------|--------|
+| Test Plan Review | [Date] | [Date] | [ ] Not Started |
+| Test Case Generation | [Date] | [Date] | [ ] Not Started |
+| Test Execution | [Date] | [Date] | [ ] Not Started |
+| Bug Reporting | [Date] | [Date] | [ ] Not Started |
+| Regression Testing | [Date] | [Date] | [ ] Not Started |
+
+---
+
+## 10. Entry & Exit Criteria
+
+**Entry Criteria (When testing can start):**
+- [ ] Development complete
+- [ ] Build deployed to test environment
+- [ ] Test data prepared
+- [ ] Test environment accessible
+- [ ] All blocking defects resolved
+
+**Exit Criteria (When testing is complete):**
+- [ ] All test cases executed
+- [ ] All high priority defects resolved
+- [ ] All medium priority defects triaged
+- [ ] Test execution report created
+- [ ] Sign-off obtained from stakeholders
+
+---
+
+## 11. Revisions
+
+### Version 1.0 - [Date]
+- **Created by:** [Auto-detected or TBD]
+- **Changes:** Initial test plan creation
+- **Sections affected:** All
+
+---
+
+**Note:** This test plan inherits the overall testing strategy from feature-test-strategy.md. Refer to that document for tools, environments, and high-level approach.
+```
+
+### Step 6: Initialize Revision Log
+
+The test plan is created with Version 1.0 and initial revision entry. This enables tracking of all future updates via `/revise-test-plan` command.
+
+**Revision log format:**
+```markdown
+### Version [X.Y] - [Date]
+- **Updated by:** [Person or command]
+- **Changes:** [Description of what changed]
+- **Sections affected:** [Which sections were modified]
+```
+
+### Step 7: Completion
+
+Output confirmation message:
+```
+Test plan created successfully!
+
+Location: [ticket-path]/test-plan.md
+Version: 1.0
+Sections: 11
+
+Feature knowledge updated: [yes/no]
 ```

@@ -1,14 +1,18 @@
 # Test Case Generation Workflow
 
-This workflow guides the agent in generating a comprehensive suite of test cases for a specific ticket, based on its analyzed requirements.
+This workflow generates comprehensive test cases from a test plan.
 
 ## Core Responsibilities
 
-1.  **Analyze Requirements**: Read and fully understand the `requirements.md` file for the ticket under test.
-2.  **Generate Test Cases**: Based on the requirements, create a full suite of test cases, including positive, negative, and boundary conditions.
-3.  **Save Test Cases**: Document the generated test cases in a structured Markdown file and save it to the correct directory.
+1. **Read Test Plan**: Extract scenarios, coverage requirements, and test data from test-plan.md
+2. **Generate Test Cases**: Create detailed executable test cases with proper structure and execution tracking
+3. **Coverage Analysis**: Ensure all requirements are covered by test cases
+4. **Automation Recommendations**: Identify automation opportunities for each test case
+5. **Save Output**: Write test-cases.md with proper structure based on generation mode
 
-**Note:** The placeholder `[ticket-path]` in this workflow refers to the full path to the ticket being analyzed, for example: `qa-agent-os/features/2025-11-19-feature-name/TICKET-123`.
+**Note:** The placeholder `[ticket-path]` in this workflow refers to the full path to the ticket, for example: `qa-agent-os/features/feature-name/TICKET-123`.
+
+**Note:** The placeholder `[mode]` refers to the generation mode: `create`, `overwrite`, or `append`.
 
 ---
 
@@ -16,37 +20,180 @@ This workflow guides the agent in generating a comprehensive suite of test cases
 
 ### Step 0: Compile Applicable Standards
 
-Before reading requirements, run `{{workflows/testing/compile-testing-standards}}` to gather the current list of `@qa-agent-os/standards/...` references you must honor (skip only if `standards_as_claude_code_skills` is `true`). Share the list in your response so downstream users know which guardrails were enforced.
+{{workflows/testing/compile-testing-standards}}
 
-### Step 1: Ingest Requirements
+### Step 1: Read Test Plan
 
-Read the detailed requirements from the ticket's `planning` directory.
+Read the test plan to extract requirements:
 
 ```bash
-# Set the path to the requirements file
-REQUIREMENTS_FILE="[ticket-path]/planning/requirements.md"
-
-# Read the file to use as context for the next step
-cat $REQUIREMENTS_FILE
+TEST_PLAN="[ticket-path]/test-plan.md"
 ```
+
+Extract from test plan:
+- **Section 5: Test Coverage Matrix** - Requirement to test case mapping
+- **Section 6: Test Scenarios & Cases** - Positive, negative, edge cases, dependency failures
+- **Section 7: Test Data Requirements** - Data needed for testing
+- **Section 4: Testable Requirements** - Detailed requirements breakdown
 
 ### Step 2: Generate Test Cases
 
-Using the content of the `requirements.md` file as your context, generate a comprehensive set of test cases.
+Based on test plan content, generate test cases with this structure:
 
--   Adhere to the standards defined in `@qa-agent-os/standards/testcases/test-case-structure.md`.
--   Adhere to the standards defined in `@qa-agent-os/standards/testing/api-testing.md` for any API-related tests.
--   Include a mix of functional, UI, and edge case tests as appropriate.
--   Each test case must have a clear Title, Steps, and Expected Result.
+**For each test scenario:**
 
-### Step 3: Save the Test Cases
+1. **Create test case ID**: `[TICKET-ID]-TC-[NUMBER]` (e.g., WYX-123-TC-01)
+2. **Define test case type**:
+   - Functional - Positive (happy path)
+   - Functional - Negative (error handling)
+   - Functional - Edge Case (boundary values)
+   - Dependency Failure (external service errors)
+3. **Set priority**: [High|Medium|Low] based on requirement priority from test plan
+4. **Write clear objective**: What is being tested and why
+5. **Define preconditions**: Setup required before test execution
+6. **Create detailed steps in table format**:
+   ```markdown
+   | Step | Action | Expected Result |
+   |------|--------|-----------------|
+   | 1    | [Action description] | [Expected outcome] |
+   | 2    | [Action description] | [Expected outcome] |
+   ```
+7. **Reference test data**: Link to specific test data from Section 7 of test plan
+8. **Define expected final result**: Overall outcome after all steps
+9. **Include execution tracking**:
+   ```markdown
+   **Execution Result:**
+   - [ ] Pass
+   - [ ] Fail
+   - [ ] Blocked
 
-Save the generated test cases to a new file named `testcases.md` inside the ticket's `artifacts` directory.
+   **Executed By:** _______________
+   **Execution Date:** _______________
+   **Notes:**
 
-```bash
-# The path where the test cases will be saved
-OUTPUT_FILE="[ticket-path]/artifacts/testcases.md"
+   **Defects:**
+   - Link defects here if test fails
+   ```
 
-# Write the generated content to the file
-# (The agent will use its 'Write' tool to perform this action)
+### Step 3: Coverage Analysis
+
+Compare generated test cases against coverage matrix from test plan Section 5:
+
+1. Verify all requirements have at least one test case
+2. Verify positive, negative, and edge cases are covered per requirement
+3. Flag any coverage gaps in the coverage section
+4. Create coverage summary:
+   ```markdown
+   ## Coverage Analysis
+
+   - Total requirements: [N]
+   - Requirements with test cases: [N] ([percentage]%)
+   - Positive test cases: [N]
+   - Negative test cases: [N]
+   - Edge case test cases: [N]
+   - Dependency failure test cases: [N]
+
+   **Coverage Gaps:**
+   - [List any requirements without test cases]
+   ```
+
+### Step 4: Automation Recommendations
+
+For each test case, analyze automation potential:
+
+**High automation priority:**
+- API tests (can be automated with REST clients)
+- Repetitive functional tests with clear inputs/outputs
+- Tests with large data sets
+
+**Medium automation priority:**
+- UI tests with stable selectors
+- Tests requiring multiple data variations
+- Integration tests with external dependencies
+
+**Low automation priority:**
+- Exploratory tests requiring human judgment
+- Tests requiring visual verification
+- One-time tests or rarely executed tests
+
+Create automation summary:
+```markdown
+## Automation Recommendations
+
+**High Priority Candidates:**
+- [Test ID]: [Reason - e.g., API test, repetitive, stable]
+
+**Medium Priority Candidates:**
+- [Test ID]: [Reason - e.g., UI test, data-driven]
+
+**Manual Execution Required:**
+- [Test ID]: [Reason - e.g., exploratory, visual]
 ```
+
+### Step 5: Save Test Cases
+
+Save to `[ticket-path]/test-cases.md` with structure:
+
+```markdown
+# Test Cases: [Ticket ID]
+
+**Generated:** [Date]
+**Source:** test-plan.md
+**Total Test Cases:** [N]
+
+---
+
+## Test Execution Summary
+
+| Test ID | Type | Priority | Status | Executed By | Date | Defects |
+|---------|------|----------|--------|-------------|------|---------|
+| [ID]-TC-01 | [Type] | [Priority] | [ ] Not Started | | | |
+| [ID]-TC-02 | [Type] | [Priority] | [ ] Not Started | | | |
+
+**Legend:**
+- [ ] Not Started
+- [x] Passed
+- [!] Failed
+- [B] Blocked
+
+---
+
+## Detailed Test Cases
+
+[Generated test cases with full structure]
+
+---
+
+## Test Data Reference
+
+[Test data from test plan Section 7]
+
+---
+
+## Coverage Analysis
+
+[Coverage summary from Step 3]
+
+---
+
+## Automation Recommendations
+
+[Automation priorities from Step 4]
+```
+
+**Respect MODE variable:**
+- **create**: Write new file (error if file exists)
+- **overwrite**: Replace existing file completely
+- **append**: Add new test cases to existing file (update summary table, append to detailed section)
+
+If mode is **append**:
+1. Read existing test-cases.md
+2. Parse existing test case IDs
+3. Generate new test cases starting from next ID number
+4. Append new cases to detailed section
+5. Update test execution summary table with new rows
+6. Preserve existing test results and notes
+
+### Step 6: Completion
+
+Output confirmation message with file path and test case count.

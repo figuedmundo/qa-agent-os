@@ -1,0 +1,53 @@
+Feature Folder Structure Template
+==================================
+
+This template defines the folder hierarchy for feature-level documentation.
+
+Structure:
+features/
+  [feature-name]/
+    documentation/
+      mockups/
+    [ticket-id-1]/
+      documentation/
+        visuals/
+    [ticket-id-2]/
+      documentation/
+        visuals/
+
+Details:
+--------
+
+features/[feature-name]/
+  Root directory for the feature. Feature name should be normalized (lowercase, hyphens, no special characters).
+
+documentation/
+  Raw source documents from stakeholders (BRDs, API specs, mockups, etc.)
+  Created during /plan-feature Phase 2
+  Should also contain COLLECTION_LOG.md listing all collected documents
+
+mockups/
+  Subdirectory within documentation/ for visual assets
+  Stores UI mockups, wireframes, screenshots, etc.
+
+feature-knowledge.md
+  Consolidated master document of WHAT is being built
+  Created during /plan-feature Phase 3
+  Contains 8 sections: Feature Overview, Business Requirements, Technical Requirements, User Experience, Edge Cases & Constraints, Test Considerations, Open Questions, Document Sources
+
+feature-test-strategy.md
+  Strategic test approach document for HOW feature will be tested
+  Created during /plan-feature Phase 4
+  Contains 10 sections: Testing Objective, Test Approach, Test Environment & Tools, Test Data Strategy, Automation Strategy, Non-Functional Requirements, Risk Assessment, Entry & Exit Criteria, Deliverables, Roles & Responsibilities
+
+[ticket-id-N]/
+  Subdirectory for each ticket within the feature
+  Ticket ID should be normalized (e.g., WYX-123)
+  Created during /plan-ticket Phase 1
+
+ticket-level documentation/ directories
+  Ticket-specific documents separate from feature-level documentation
+  Includes COLLECTION_LOG.md for ticket-level collected documents
+
+visuals/
+  Subdirectory within ticket documentation/ for ticket-specific mockups and screenshots

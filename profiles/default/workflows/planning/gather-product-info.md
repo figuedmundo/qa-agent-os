@@ -13,7 +13,7 @@ Gather from user the following required information:
 - **Product Idea**: Core concept and purpose (required)
 - **Key Features**: Minimum 3 features with descriptions
 - **Target Users**: At least 1 user segment with use cases
-- **Product Areas & Teams**: Map each major surface or domain to the squad that owns it (e.g., "Cows → Investments flows", "Chicks → Cards & Onboarding"). Capture both the team name and its charter so future tickets inherit the right context.
+- **Product Areas & Teams**: Map each major surface or domain to the squad that owns it. Capture both the team name and its charter so future tickets inherit the right context.
 
 If any required information is missing, prompt user:
 ```

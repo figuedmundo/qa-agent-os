@@ -14,7 +14,7 @@ Use the **product-planner** subagent to create comprehensive product documentati
 IF the user has provided any details in regards to the product idea, its purpose, features list, target users and any other details then provide those to the **product-planner** subagent.
 
 The product-planner will:
-- Confirm (or gather) product idea, features, target users, confirm the tech stack and gather other details
+- Confirm (or gather) product idea, features, target users, and gather other details
 - Create `qa-agent-os/product/mission.md` with product vision and strategy
 
 ### PHASE 2: Inform the user

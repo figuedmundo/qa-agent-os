@@ -3,6 +3,51 @@
 Get notified of major releases by subscribing here:
 https://medirect.com/qa-agent-os
 
+## [0.4.0] - 2025-11-24
+
+### QA Workflow Phase 2 - Bug Reporting and Lifecycle Management
+
+This release introduces comprehensive bug reporting and lifecycle management commands for QA Agent OS, completing Phase 2 of the QA Workflow redesign.
+
+#### New Features
+
+**Two New Commands:**
+- `/report-bug` - Context-aware bug reporting with AI-assisted severity classification
+  - Interactive and direct modes
+  - Guided evidence collection checklist (6 evidence types)
+  - Auto-detect feature and ticket context
+  - AI severity classification with user override
+  - Proper bug ID auto-increment
+
+- `/revise-bug` - Bug revision and lifecycle management with version tracking
+  - 6 update types (evidence, severity, status, reproduction notes, developer notes, affected scope)
+  - Versioned revision log with timestamps
+  - Context-aware bug discovery
+  - Status workflow tracking (New → In Progress → Ready for QA → Verified/Closed → Re-opened)
+
+**Single-Agent & Multi-Agent Support:**
+- Both commands available in single-agent (CLI) and multi-agent (Claude Code) modes
+- bug-writer agent enhanced for structured bug report generation and revision
+
+**Standards & Templates:**
+- New `bug-report-template.md` with complete bug structure
+- Enhanced `severity-rules.md` with AI classification checklist
+- Updated `bug-template.md` with revision log section
+
+#### Architecture
+
+- 5 phases for `/report-bug`: detect-context, collect-details, collect-evidence, classify-severity, generate-report
+- 3 phases for `/revise-bug`: detect-bug, prompt-update-type, apply-update
+- Multi-agent versions delegate to bug-writer agent
+- Bug storage: `qa-agent-os/features/[feature]/[ticket]/bugs/BUG-XXX.md`
+
+#### Testing & Verification
+
+- Comprehensive testing checklist created for both commands
+- Installation verified for single-agent and multi-agent modes
+- All 32 tasks completed and verified
+- Full specification and implementation documentation
+
 ## [0.3.0] - 2025-11-21
 
 ### Architecture Alignment - Major Architectural Update

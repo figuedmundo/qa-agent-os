@@ -65,8 +65,7 @@ Options:
 **What happens with your documents:**
 
 1. Each document is stored in `features/[feature-name]/[ticket-id]/documentation/`
-2. `COLLECTION_LOG.md` is created listing all documents with metadata
-3. This creates an audit trail of what was gathered and when
+2. Document references will be listed in test-plan.md Section 1 (References)
 
 **Next Phase:**
 

@@ -24,6 +24,10 @@
 
 ## 2. Ticket Overview
 
+### Executive Summary
+
+[2-3 sentence summary of test plan status, coverage achieved, and readiness]
+
 ### Ticket Summary
 
 [Brief description of what this ticket aims to accomplish - the main goal]
@@ -69,12 +73,27 @@
 
 ## 5. Test Coverage Matrix
 
-**Traceability: Requirements → Test Cases**
+### Coverage Summary
+
+- **Total Requirements:** [N]
+- **Requirements with Test Cases:** [N] ([percentage]%)
+- **Total Test Cases:** [N]
+  - Functional: [N] ([percentage]%)
+  - Edge Cases: [N] ([percentage]%)
+  - Negative: [N] ([percentage]%)
+- **Automation Potential:** [N]/[total] ([percentage]%)
+
+### Traceability: Requirements → Test Cases
 
 | Requirement ID | Test Case IDs | Coverage Type | Status |
 |----------------|---------------|---------------|--------|
 | RQ-01 | TC-01, TC-02, TC-03 | Positive, Negative, Edge | Planned |
 | RQ-02 | TC-04, TC-05 | Positive, Negative | Planned |
+
+**Coverage Goals:**
+- All requirements must have at least 1 test case: [status]
+- All requirements must have positive/edge tests where applicable: [status]
+- All dependency failures tested: [status]
 
 ---
 
@@ -156,11 +175,21 @@
 
 ## 9. Execution Timeline
 
-| Milestone | Date | Status |
-|-----------|------|--------|
-| Test plan review | [DATE] | Pending |
-| Test case generation | [DATE] | Pending |
-| Test execution | [DATE] | Pending |
+| Phase | Start Date | End Date | Status | Owner |
+|-------|-----------|----------|--------|-------|
+| Test Plan Review | [DATE] | [DATE] | ⏳ Not Started | [OWNER] |
+| Test Case Generation | [DATE] | [DATE] | ⏳ Not Started | [OWNER] |
+| Test Environment Setup | [DATE] | [DATE] | ⏳ Not Started | [OWNER] |
+| Test Execution | [DATE] | [DATE] | ⏳ Not Started | [OWNER] |
+| Bug Reporting & Triage | [DATE] | [DATE] | ⏳ Not Started | [OWNER] |
+| Regression Testing | [DATE] | [DATE] | ⏳ Not Started | [OWNER] |
+| Test Summary & Sign-off | [DATE] | [DATE] | ⏳ Not Started | [OWNER] |
+
+**Status Icons:**
+- ✅ Complete
+- 🔄 In Progress
+- ⏳ Not Started
+- ⚠️ Blocked
 
 ---
 
@@ -188,6 +217,36 @@
 
 **Version 1.0 - [DATE]**
 - Initial test plan created
+- Sections: 12
+- Requirements: [N]
+- Test scenarios: [N]
+
+---
+
+## 12. Gap Detection Log
+
+### Gap Analysis
+
+**Date:** [DATE]
+
+**Gaps Found:** [Yes/No]
+
+**Feature Knowledge Status:** [Updated / No updates required]
+
+**Analysis:**
+
+[Summary of gap detection analysis. If no gaps: "Ticket requirements were compared against feature-knowledge.md. No new business rules, APIs, or edge cases requiring addition to feature knowledge were found. All ticket-specific details are captured in this test plan."
+
+If gaps found: "The following new information was identified during requirement analysis:"]
+
+**New Information Identified:**
+- [None / List of gaps found]
+
+**Feature Knowledge Updates:**
+- [None / List of sections updated in feature-knowledge.md]
+
+**Traceability:**
+- [If updated: References to feature-knowledge.md sections that were appended]
 
 ---
 

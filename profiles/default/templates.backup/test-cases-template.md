@@ -3,9 +3,40 @@
 **Feature:** [FEATURE_NAME]
 **Ticket:** [TICKET_ID]
 **Generated:** [DATE]
-**Total Cases:** [NUMBER]
+**Version:** 1.0
+**Source:** test-plan.md (v[VERSION])
 
-**Source:** Generated from `test-plan.md`
+---
+
+## Test Cases Overview
+
+**Total Test Cases:** [NUMBER]
+
+### By Type
+- **Functional Tests:** [N] ([percentage]%)
+- **Edge Case Tests:** [N] ([percentage]%)
+- **Negative Tests:** [N] ([percentage]%)
+
+### By Priority
+- **Critical:** [N] ([percentage]%)
+- **High:** [N] ([percentage]%)
+- **Medium:** [N] ([percentage]%)
+- **Low:** [N] ([percentage]%)
+
+### By Automation Status
+- **Automated:** [N] ([percentage]%) - [Technologies: e.g., Playwright, WireMock, Python]
+- **Manual:** [N] ([percentage]%) - [Reasons: e.g., Visual validation, Date-dependent]
+
+### Coverage
+- **Requirements covered:** [N]/[total] ([percentage]%)
+- **Positive test coverage:** [N]/[total] ([percentage]%)
+- **Edge case coverage:** [N]/[total] ([percentage]%)
+- **Negative test coverage:** [N]/[total] ([percentage]%)
+
+### Critical Testing Areas
+1. [Critical area 1] (Test IDs: [TC-XXX])
+2. [Critical area 2] (Test IDs: [TC-XXX])
+3. [Critical area 3] (Test IDs: [TC-XXX])
 
 ---
 
@@ -198,22 +229,94 @@ _[Link to bug reports if any found]_
 
 ---
 
-## Coverage Notes
+## Coverage Analysis
 
-**Test Case Distribution:**
+### Test Case Distribution
 
-| Type | Count |
-|------|-------|
-| Functional - Positive | [COUNT] |
-| Functional - Negative | [COUNT] |
-| Edge Cases | [COUNT] |
-| Dependency Failure | [COUNT] |
+| Type | Count | Percentage |
+|------|-------|------------|
+| Functional - Positive | [COUNT] | [%] |
+| Functional - Negative | [COUNT] | [%] |
+| Edge Cases | [COUNT] | [%] |
+| Dependency Failure | [COUNT] | [%] |
 
-**Automation Candidates:**
-- [Test cases suitable for automation]
+### Requirements Coverage
 
-**Manual Only:**
-- [Test cases requiring manual execution]
+| Requirement ID | Test Case IDs | Coverage Status |
+|----------------|---------------|-----------------|
+| RQ-01 | TC-01, TC-02 | ✅ Covered |
+| RQ-02 | TC-03, TC-04 | ✅ Covered |
+
+---
+
+## Automation Recommendations
+
+### High Priority Automation Candidates
+- **TC-XXX:** [Test Case Title] - [Reason: e.g., API test, repetitive, stable]
+- **TC-XXX:** [Test Case Title] - [Reason]
+
+### Medium Priority Automation Candidates
+- **TC-XXX:** [Test Case Title] - [Reason]
+
+### Manual Only Tests
+- **TC-XXX:** [Test Case Title] - [Reason: e.g., Visual validation required]
+- **TC-XXX:** [Test Case Title] - [Reason: Date-dependent scenario]
+
+**Automation Technologies:**
+- [Technology 1: e.g., Playwright for UI tests]
+- [Technology 2: e.g., WireMock for API mocking]
+- [Technology 3: e.g., Python scripts for data validation]
+
+---
+
+## Recommended Execution Schedule
+
+**Total Estimated Duration:** [N] hours ([N] days)
+
+### Day 1: High-Priority Functional Tests ([N] hours)
+- TC-XXX, TC-XXX, TC-XXX
+- **Priority:** Critical for basic functionality
+- **Focus:** Smoke tests and core happy paths
+
+### Day 2: Medium-Priority Functional Tests ([N] hours)
+- TC-XXX, TC-XXX, TC-XXX
+- **Priority:** Data validation critical
+- **Focus:** Detailed functional validation
+
+### Day 3: Edge Cases ([N] hours)
+- TC-XXX, TC-XXX, TC-XXX
+- **Priority:** Boundary condition testing
+- **Focus:** Edge cases and boundary values
+
+### Day 4: Negative & Error Handling ([N] hours)
+- TC-XXX, TC-XXX
+- **Priority:** Robustness testing
+- **Focus:** Error scenarios and dependency failures
+
+### Day 5: Regression & Sign-Off ([N] hours)
+- Retest any failed tests
+- Cross-browser/device validation
+- Final sign-off
+
+---
+
+## Generation History
+
+### Version 1.0 - [DATE]
+
+**Initial Generation**
+
+**Changes:**
+- Generated [N] test cases from test-plan.md v[VERSION]
+- Test cases created: TC-XXX to TC-XXX
+
+**Source:** test-plan.md Sections 4-7 (Requirements, Coverage, Scenarios, Test Data)
+
+**Coverage Achieved:**
+- [N]/[N] requirements covered (100%)
+- [N] positive tests
+- [N] negative tests
+- [N] edge case tests
 
 ---
 

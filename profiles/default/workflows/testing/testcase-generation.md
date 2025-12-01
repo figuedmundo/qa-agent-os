@@ -5,7 +5,7 @@ This workflow generates comprehensive test cases from a test plan.
 ## Core Responsibilities
 
 1. **Read Test Plan**: Extract scenarios, coverage requirements, and test data from test-plan.md
-2. **Generate Test Cases**: Create detailed executable test cases with proper structure and execution tracking
+2. **Generate Test Cases**: Create detailed executable test cases following structure from test-cases standard
 3. **Coverage Analysis**: Ensure all requirements are covered by test cases
 4. **Automation Recommendations**: Identify automation opportunities for each test case
 5. **Save Output**: Write test-cases.md with proper structure based on generation mode
@@ -13,6 +13,14 @@ This workflow generates comprehensive test cases from a test plan.
 **Note:** The placeholder `[ticket-path]` in this workflow refers to the full path to the ticket, for example: `qa-agent-os/features/feature-name/TICKET-123`.
 
 **Note:** The placeholder `[mode]` refers to the generation mode: `create`, `overwrite`, or `append`.
+
+---
+
+### Standard Reference
+
+All test case structure, field definitions, and best practices are defined in:
+
+**Standard:** `@qa-agent-os/standards/testcases/test-cases.md`
 
 ---
 
@@ -38,42 +46,22 @@ Extract from test plan:
 
 ### Step 2: Generate Test Cases
 
-Based on test plan content, generate test cases with this structure:
+Based on test plan content, generate test cases following the structure from the standard:
 
-**For each test scenario:**
+**Standard:** `@qa-agent-os/standards/testcases/test-cases.md`
 
-1. **Create test case ID**: `[TICKET-ID]-TC-[NUMBER]` (e.g., WYX-123-TC-01)
-2. **Define test case type**:
-   - Functional - Positive (happy path)
-   - Functional - Negative (error handling)
-   - Functional - Edge Case (boundary values)
-   - Dependency Failure (external service errors)
-3. **Set priority**: [High|Medium|Low] based on requirement priority from test plan
-4. **Write clear objective**: What is being tested and why
-5. **Define preconditions**: Setup required before test execution
-6. **Create detailed steps in table format**:
-   ```markdown
-   | Step | Action | Expected Result |
-   |------|--------|-----------------|
-   | 1    | [Action description] | [Expected outcome] |
-   | 2    | [Action description] | [Expected outcome] |
-   ```
-7. **Reference test data**: Link to specific test data from Section 7 of test plan
-8. **Define expected final result**: Overall outcome after all steps
-9. **Include execution tracking**:
-   ```markdown
-   **Execution Result:**
-   - [ ] Pass
-   - [ ] Fail
-   - [ ] Blocked
+The standard defines:
+- Complete document structure (overview, execution summary, individual test cases)
+- Test case types (positive, negative, edge, dependency failure)
+- Field definitions and formatting rules
+- Best practices and guidelines
 
-   **Executed By:** _______________
-   **Execution Date:** _______________
-   **Notes:**
-
-   **Defects:**
-   - Link defects here if test fails
-   ```
+Generate test cases by:
+1. Reading test-cases standard to understand required structure
+2. Extracting scenarios from test plan Sections 6-7
+3. Creating test cases following standard format
+4. Including all required fields from standard
+5. Following writing guidelines from standard
 
 ### Step 3: Coverage Analysis
 
@@ -196,4 +184,43 @@ If mode is **append**:
 
 ### Step 6: Completion
 
-Output confirmation message with file path and test case count.
+**IMPORTANT - File Output Instructions:**
+
+DO NOT create additional summary files like:
+- TESTCASE_GENERATION_SUMMARY.md
+- TEST_CASES_SUMMARY.md
+- or any other meta-documentation files
+
+ALL summary information should be included in test-cases.md itself. Creating additional files creates unnecessary noise.
+
+Output confirmation message to the user (do not write this to a file):
+```
+Test cases generated successfully!
+
+Output: [ticket-path]/test-cases.md
+Mode: [create|overwrite|append]
+
+Test Cases Summary:
+- Total test cases: [N]
+  - Positive tests: [N]
+  - Negative tests: [N]
+  - Edge cases: [N]
+
+Priority Distribution:
+- Critical: [N] ([percentage]%)
+- High: [N] ([percentage]%)
+- Medium: [N] ([percentage]%)
+- Low: [N] ([percentage]%)
+
+Automation Status:
+- Automated: [N] ([percentage]%)
+- Manual: [N] ([percentage]%)
+
+Coverage:
+- Requirements covered: [N]/[total] ([percentage]%)
+
+NEXT STEPS:
+- Review test cases for completeness
+- Execute tests and track results using the execution summary table
+- Report bugs using /report-bug
+```

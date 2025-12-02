@@ -2,7 +2,7 @@
 
 ## Your system for spec-driven agentic development tailored for Quality Assurance.
 
-QA Agent OS transforms AI coding agents from confused interns into productive QA Engineers. With structured workflows that capture your standards, your stack, and the unique details of your codebase, QA Agent OS gives your agents the features details they need to ship quality QA processes, analyze bugs, and follow workflows on the first try—not the fifth.
+QA Agent OS transforms AI coding agents from confused interns into productive QA Engineers. With structured workflows that capture your standards, your stack, and the unique details of your codebase, QA Agent OS gives your agents the feature details they need to ship quality QA processes, analyze bugs, and follow workflows on the first try—not the fifth.
 
 It empowers your AI to understand:
 *   **Standards:** *How* you test (your QA standards, conventions, and best practices).
@@ -11,17 +11,31 @@ It empowers your AI to understand:
 
 Use it with:
 
-✅ Claude Code, Cursor, or any other AI coding tool.
-✅ New products or established codebases.
-✅ Big features, small fixes, or anything in between.
-✅ Any language or framework.
+✅ **Gemini 3** (recommended) — State-of-the-art multimodal AI with 1M token context and advanced agentic capabilities
+✅ Claude Code, Cursor, or other AI coding tools
+✅ New products or established codebases
+✅ Big features, small fixes, or anything in between
+✅ Any language or framework
 
 ---
+
+### AI Agent Support
+
+QA Agent OS supports both **Gemini 3** (recommended) and **Claude Code** out of the box:
+
+| Feature | Gemini 3 | Claude Code |
+|---------|----------|-------------|
+| **Command Type** | `.toml` custom commands | Markdown orchestrators |
+| **Multi-Agent** | Native agentic capabilities | Multi-agent orchestration with subagents |
+| **Context Window** | 1 million tokens | 200K tokens |
+| **Multimodal** | Advanced (text, images, audio, video) | Text & images |
+| **Setup** | `.gemini/commands/` | `.claude/commands/` + `.claude/agents/` |
+| **Best For** | Complex QA workflows with large codebases | Enterprise multi-team coordination |
 
 ### Documentation & Installation
 
 - **[QA-QUICKSTART.md](QA-QUICKSTART.md)** - Get started with the 5-command QA workflow
-- **[CLAUDE.md](CLAUDE.md)** - Complete architecture and development guide
+- **[CLAUDE.md](CLAUDE.md)** - Complete architecture and development guide (supports both Gemini 3 and Claude Code)
 - **[CHANGELOG.md](CHANGELOG.md)** - Release notes and feature updates
 
 ---
@@ -41,21 +55,23 @@ This document outlines the core vision, architecture, and workflow for the QA Ag
 
 The `qa-agent-os` is a distributable, spec-driven system designed to provide AI coding assistants with the structured context they need to perform production-quality Quality Assurance tasks. It transforms an AI's generic capabilities into a specialized, expert QA assistant tailored to a specific project's needs.
 
-### Latest Update: Architecture Alignment (v0.3.0 - Nov 2025)
+### Latest Update: Dual AI Agent Support (v0.6.0+ - Dec 2025)
 
-The QA Agent OS has been fully aligned with the original **Agent OS architecture patterns**. This means:
+QA Agent OS now supports both **Gemini 3** (primary) and **Claude Code** with full architectural alignment:
 
-- **Workflow-Centric Design:** All implementation logic is now in reusable workflows, not duplicated in commands
-- **Multi-Agent Support:** Both single-agent (CLI-friendly) and multi-agent (Claude Code) modes work seamlessly
+- **Workflow-Centric Design:** All implementation logic is in reusable workflows, not duplicated in commands
+- **Gemini 3 Native:** Optimized for Google's state-of-the-art 1M token context window and agentic capabilities
+- **Claude Code Support:** Full multi-agent orchestration with subagents for enterprise QA teams
 - **Zero Logic Duplication:** Workflows are referenced by multiple commands/agents using `{{workflows/...}}` tags
 - **Token-Efficient:** AI agents receive focused context without unnecessary duplication
 - **Consistent Standards:** Standards are injected consistently across all commands and agents
 
-This architectural alignment enables:
-- New commands to be added without reimplementing core logic
-- Seamless switching between single-agent (Gemini CLI, etc.) and multi-agent (Claude Code) modes
-- Easy maintenance: update logic in one place, all commands reflect the change
-- Better scalability for future QA workflow additions
+This dual-agent architecture enables:
+- Leverage Gemini 3's superior context window for complex QA scenarios
+- Optional Claude Code deployment for enterprise multi-agent coordination
+- Seamless agent switching without code changes
+- Easy maintenance: update logic in one place, all agents reflect changes
+- Better scalability for future QA workflow additions and integrations
 
 ## 2. Core Methodology: The 3-Layer Context System
 
@@ -114,6 +130,24 @@ The user works within their project directory using their preferred AI tool (e.g
 
 After installation and some use, a QA engineer's project directory will look like this:
 
+**For Gemini 3 (Recommended):**
+```
+~/company-project-A/
+├── .gemini/
+│   └── commands/
+│       ├── qa-agent-os/
+│       │   ├── plan-product.toml
+│       │   ├── plan-feature.toml
+│       │   ├── plan-ticket.toml
+│       │   ├── generate-testcases.toml
+│       │   ├── revise-test-plan.toml
+│       │   └── update-feature-knowledge.toml
+│       └── ...
+│
+├── qa-agent-os/
+```
+
+**For Claude Code:**
 ```
 ~/company-project-A/
 ├── .claude/

@@ -1,27 +1,30 @@
-version: 0.4.0
+version: 0.6.0
 base_install: true
 
 
 # CONFIGURATION
 # Configure defaults for the tools you use and how Agent OS should compile commands for your projects.
+# QA Agent OS is optimized for Gemini 3 (recommended) with Claude Code support for enterprise teams.
+
+
+# ================================================
+# Do you use Gemini 3?
+# Set to true to install custom command .toml files in your project's .gemini/commands/qa-agent-os/ folder
+# RECOMMENDED: Gemini 3 has 1M token context window, advanced multimodal capabilities, and native agentic features
+#
+# Override this default when running project-install.sh by using the flag --gemini-commands true/false
+# ================================================
+gemini_commands: true
 
 
 # ================================================
 # Do you use Claude Code?
 # Set to true to install commands in your project's .claude/commands/qa-agent-os/ folder
+# Use for enterprise multi-agent coordination with subagent support
 #
 # Override this default when running project-install.sh by using the flag --claude-code-commands=true/false
 # ================================================
-claude_code_commands: true
-
-
-# ================================================
-# Do you use Gemini CLI?
-# Set to true to install commands in your project's .gemini/commands/qa-agent-os/ folder
-#
-# Override this default when running project-install.sh by using the flag --gemini-commands true/false
-# ================================================
-gemini_commands: false
+claude_code_commands: false
 
 
 # ================================================

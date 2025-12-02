@@ -15,6 +15,8 @@ Set by previous phases:
 
 {{workflows/testing/testcase-generation}}
 
+The workflow references: `@qa-agent-os/standards/testcases/test-cases.md`
+
 The workflow will:
 - Read the test plan from `[ticket-path]/test-plan.md`
 - Extract test scenarios, coverage requirements, and test data

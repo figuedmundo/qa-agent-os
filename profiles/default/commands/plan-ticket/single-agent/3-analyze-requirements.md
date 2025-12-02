@@ -16,6 +16,8 @@ Set by previous phases:
 
 {{workflows/testing/requirement-analysis}}
 
+The workflow references: `@qa-agent-os/standards/testcases/test-plan.md`
+
 The workflow will:
 - Read ticket documentation from `[ticket-path]/documentation/`
 - Read feature knowledge and test strategy

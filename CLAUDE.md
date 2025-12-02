@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code and Gemini 3 when working with code in this repository.
 
 ## Project Overview
 
@@ -22,12 +22,14 @@ Shell scripts that read configuration and process knowledge into final outputs:
 
 ### 2. Configuration (`config.yml`)
 Central control panel defining:
-- AI agent target (currently "Claude Code")
+- AI agent target (Claude Code or Gemini 3)
 - Single-agent vs. multi-agent setup
 - Profile selection (default or custom)
-- Output paths and behavior (Claude Code commands, subagents, skills)
+- Output paths and behavior:
+  - **Claude Code:** `.claude/commands/` and `.claude/agents/` for multi-agent orchestration
+  - **Gemini 3:** `.gemini/commands/` with `.toml` files for custom commands
 
-Current defaults target Claude Code with subagents enabled, standards injected as file references.
+Current defaults support both Claude Code (with subagents) and Gemini 3 (with custom commands), with standards injected as file references.
 
 ### 3. Knowledge & Personality (`profiles/default/`)
 The content layer containing:
@@ -47,7 +49,7 @@ The content layer containing:
 - `collection-log-template.md` — Documentation gathering log
 - `folder-structures/` — Directory structure templates
 
-**`commands/`** — Discrete AI agent commands (compiled into `.claude/commands/qa-agent-os/`)
+**`commands/`** — Discrete AI agent commands (compiled into `.claude/commands/qa-agent-os/` for Claude Code or `.gemini/commands/` with `.toml` files for Gemini 3)
 - `plan-product/` — Create product mission documentation (Phase 1: gather concepts, Phase 2: create mission)
 - `plan-feature/` — Plan entire feature with 4 phases: init structure, gather docs, consolidate knowledge, create test strategy
 - `plan-ticket/` — Plan ticket testing with 5 phases: smart detection, init ticket, gather docs, analyze requirements with gap detection, optional test case generation
@@ -62,16 +64,31 @@ The content layer containing:
 
 ### 4. Installation Output (End-user project)
 After running `project-install.sh`, a project contains:
+
+**For Claude Code:**
 ```
 project/
 ├── .claude/
 │   ├── commands/qa-agent-os/       ← Compiled Claude Code commands
-│   └── agents/qa-agent-os/         ← Claude Code subagents (if enabled)
+│   └── agents/qa-agent-os/         ← Multi-agent orchestration
 ├── qa-agent-os/
-│   ├── standards/                  ← Compiled standards from profiles/default/standards/
-│   ├── templates/                  ← Document templates for planning
-│   ├── product/                    ← User-created product context (mission.md)
-│   └── features/                   ← User-created feature specs (ticket-based structure)
+│   ├── standards/                  ← Compiled standards
+│   ├── templates/                  ← Document templates
+│   ├── product/                    ← User-created product context
+│   └── features/                   ← Feature specs (ticket-based structure)
+└── src/                            ← Actual project code
+```
+
+**For Gemini 3:**
+```
+project/
+├── .gemini/
+│   └── commands/                   ← Custom command .toml files (one per QA command)
+├── qa-agent-os/
+│   ├── standards/                  ← Compiled standards
+│   ├── templates/                  ← Document templates
+│   ├── product/                    ← User-created product context
+│   └── features/                   ← Feature specs (ticket-based structure)
 └── src/                            ← Actual project code
 ```
 
@@ -261,7 +278,24 @@ ls -la qa-agent-os/standards/
 
 ## Key Technical Details
 
-### Phase Tags in Commands
+### AI Agent Target Support
+
+QA Agent OS supports two primary AI agents:
+
+**Claude Code:**
+- Uses `.claude/commands/` for command definitions (Markdown)
+- Uses `.claude/agents/` for multi-agent orchestration
+- Supports complex, multi-step workflows with agent coordination
+- Ideal for enterprise QA workflows
+
+**Gemini 3:**
+- Uses `.gemini/commands/` with `.toml` files for custom commands
+- Each command is a `.toml` file with description and prompt
+- Specialized personas/workflows via custom command prompts
+- Leverages Gemini 3's state-of-the-art multimodal and agentic capabilities
+- 1-million token context window for handling complex QA scenarios
+
+### Phase Tags in Commands (Claude Code)
 Commands use phase tags to reference sub-steps:
 ```markdown
 # Execution Phases
@@ -275,10 +309,30 @@ Follow the numbered instruction files IN SEQUENCE:
 
 The `process_phase_tags()` function replaces these with actual file paths during compilation. This allows modular command construction while maintaining clean source files.
 
+### Custom Commands for Gemini 3
+Each Gemini command is a `.toml` file that defines a specialized QA persona:
+```toml
+description = "Plan feature with 4-phase workflow: structure, gather docs, consolidate knowledge, create strategy"
+prompt = """
+You are a Senior QA Architect specializing in feature planning.
+
+[Reference @qa-agent-os/standards/testcases/test-case-standard.md]
+[Reference @qa-agent-os/templates/feature-knowledge-template.md]
+
+Execute the following phases:
+1. Initialize feature folder structure
+2. Gather documentation (BRD, API specs, mockups, technical docs)
+3. Consolidate knowledge into feature-knowledge.md (8 sections)
+4. Create feature-test-strategy.md (10 sections) with testing approach
+
+Input: {{args}}
+"""
+```
+
 ### Standards Injection
 Standards can be injected into commands two ways:
 1. **File references** (default): Include path like `@qa-agent-os/standards/bugs/severity-rules.md`
-2. **Direct embedding** (if skills enabled): Full standard content embedded in command
+2. **Direct embedding** (if skills enabled for Claude Code): Full standard content embedded in command
 
 ### YAML Configuration Parsing
 `common-functions.sh` provides robust YAML parsing:

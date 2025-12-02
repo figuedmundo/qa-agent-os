@@ -131,201 +131,14 @@ Would you like me to append this to feature-knowledge.md? [y/n]
 
 ### Step 5: Create Test Plan
 
-Create comprehensive test-plan.md at `[ticket-path]/test-plan.md` with 11 sections:
+Create comprehensive test-plan.md at `[ticket-path]/test-plan.md` following the structure defined in:
 
-```markdown
-# Test Plan: [Ticket ID]
+**Standard:** `@qa-agent-os/standards/testcases/test-plan.md`
 
-**Created:** [Date]
-**Version:** 1.0
-**QA Analyst:** [Auto-detected or TBD]
-
----
-
-## 1. References
-
-**Feature Documentation:**
-- Feature Knowledge: `[relative-path-to-feature-knowledge.md]`
-- Feature Test Strategy: `[relative-path-to-feature-test-strategy.md]`
-
-**Ticket Documentation:**
-- Ticket folder: `[ticket-path]/documentation/`
-- [List all documents found in ticket documentation folder]
-
-**Related Tickets:**
-- [List related tickets if mentioned in documentation]
-
----
-
-## 2. Ticket Overview
-
-**Summary:**
-[Brief description of what this ticket accomplishes]
-
-**Acceptance Criteria:**
-- [AC 1]
-- [AC 2]
-- [AC N]
-
-**Out of Scope:**
-- [What will NOT be tested in this ticket]
-
----
-
-## 3. Test Scope
-
-**In Scope:**
-- [What will be tested]
-- [Features covered]
-- [User flows tested]
-
-**Out of Scope:**
-- [What will NOT be tested]
-- [Deferred to other tickets]
-- [Known limitations]
-
-**Testing Types:**
-- [ ] Functional Testing
-- [ ] API Testing
-- [ ] UI Testing
-- [ ] Integration Testing
-- [ ] Performance Testing (if applicable)
-- [ ] Security Testing (if applicable)
-
----
-
-## 4. Testable Requirements
-
-Break down requirements into testable items:
-
-### REQ-01: [Requirement Name]
-**Description:** [Detailed description]
-**Priority:** [High|Medium|Low]
-**Input:** [What goes in]
-**Expected Output:** [What comes out]
-**Business Rules:** [Applicable rules from feature knowledge]
-
-### REQ-02: [Requirement Name]
-[Continue for all requirements]
-
----
-
-## 5. Test Coverage Matrix
-
-| Requirement ID | Positive Tests | Negative Tests | Edge Cases | Dependency Failures |
-|----------------|---------------|----------------|------------|---------------------|
-| REQ-01         | TC-01         | TC-02          | TC-03      | TC-04              |
-| REQ-02         | TC-05         | TC-06          | TC-07      | -                  |
-
-**Coverage Goals:**
-- All requirements must have at least 1 positive test
-- All requirements must have at least 1 negative test
-- All edge cases identified must have test coverage
-- All dependency failures must be tested
-
----
-
-## 6. Test Scenarios & Cases
-
-### Positive Tests (Happy Path)
-**TC-01: [Scenario Name]**
-- **Objective:** [What are we testing]
-- **Preconditions:** [Setup needed]
-- **Test Data:** [Data reference from Section 7]
-- **Expected Result:** [What should happen]
-
-### Negative Tests (Error Handling)
-**TC-02: [Scenario Name]**
-[Similar structure as positive tests]
-
-### Edge Cases (Boundary Values)
-**TC-03: [Scenario Name]**
-[Similar structure]
-
-### Dependency Failure Tests
-**TC-04: [Scenario Name]**
-- **Objective:** Test behavior when [external service] fails
-- **Simulated Failure:** [What dependency will fail]
-- **Expected Result:** [Graceful degradation or error message]
-
----
-
-## 7. Test Data Requirements
-
-| Data Set ID | Description | Values | Usage |
-|-------------|-------------|--------|-------|
-| TD-01       | [Data description] | [Sample values] | Used in TC-01, TC-02 |
-| TD-02       | [Data description] | [Sample values] | Used in TC-03 |
-
-**Special Data Needs:**
-- [Any specific test accounts needed]
-- [Any mock data to be created]
-- [Any production-like data required]
-
----
-
-## 8. Environment Setup
-
-**Test Environment URLs:**
-- Dev: [URL if applicable]
-- Staging: [URL if applicable]
-- UAT: [URL if applicable]
-
-**Test Accounts:**
-- [Account types needed]
-- [Permissions required]
-
-**Configuration:**
-- [Any feature flags to enable]
-- [Any environment variables]
-
-**Dependencies:**
-- [External services needed]
-- [Mock services to configure]
-
----
-
-## 9. Execution Timeline
-
-| Phase | Start Date | End Date | Status |
-|-------|-----------|----------|--------|
-| Test Plan Review | [Date] | [Date] | [ ] Not Started |
-| Test Case Generation | [Date] | [Date] | [ ] Not Started |
-| Test Execution | [Date] | [Date] | [ ] Not Started |
-| Bug Reporting | [Date] | [Date] | [ ] Not Started |
-| Regression Testing | [Date] | [Date] | [ ] Not Started |
-
----
-
-## 10. Entry & Exit Criteria
-
-**Entry Criteria (When testing can start):**
-- [ ] Development complete
-- [ ] Build deployed to test environment
-- [ ] Test data prepared
-- [ ] Test environment accessible
-- [ ] All blocking defects resolved
-
-**Exit Criteria (When testing is complete):**
-- [ ] All test cases executed
-- [ ] All high priority defects resolved
-- [ ] All medium priority defects triaged
-- [ ] Test execution report created
-- [ ] Sign-off obtained from stakeholders
-
----
-
-## 11. Revisions
-
-### Version 1.0 - [Date]
-- **Created by:** [Auto-detected or TBD]
-- **Changes:** Initial test plan creation
-- **Sections affected:** All
-
----
-
-**Note:** This test plan inherits the overall testing strategy from feature-test-strategy.md. Refer to that document for tools, environments, and high-level approach.
-```
+The standard defines all 12 sections, field definitions, and best practices. Generate the test plan by:
+1. Reading the standard to understand required structure
+2. Filling each section based on requirement analysis
+3. Following field definitions and formatting rules from the standard
 
 ### Step 6: Initialize Revision Log
 
@@ -341,13 +154,33 @@ The test plan is created with Version 1.0 and initial revision entry. This enabl
 
 ### Step 7: Completion
 
-Output confirmation message:
+**IMPORTANT - File Output Instructions:**
+
+DO NOT create additional summary files like:
+- README.md
+- TEST_PLAN_SUMMARY.md
+- COLLECTION_LOG.md
+- or any other meta-documentation files
+
+ALL summary information is already included in test-plan.md. Creating additional files creates unnecessary noise.
+
+Output confirmation message to the user (do not write this to a file):
 ```
 Test plan created successfully!
 
 Location: [ticket-path]/test-plan.md
 Version: 1.0
-Sections: 11
+Sections: 12 (including Gap Detection Log)
 
 Feature knowledge updated: [yes/no]
+
+Gap Detection: [summary of gaps found, or "No feature-level gaps detected"]
+
+Coverage Summary:
+- Total requirements: [N]
+- Total test cases: [N] (from scenarios in Section 6)
+- Automation potential: [estimated percentage]
+
+NEXT STEPS:
+The test plan is ready for review. When ready to generate detailed test cases, continue to Phase 4 or run /generate-testcases later.
 ```

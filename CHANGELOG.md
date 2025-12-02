@@ -3,6 +3,196 @@
 Get notified of major releases by subscribing here:
 https://medirect.com/qa-agent-os
 
+## [0.6.0] - 2025-12-01
+
+### Template Elimination - Standards as Single Source of Truth
+
+This release eliminates template duplication by consolidating all templates into comprehensive standards, achieving significant token/context savings while improving maintainability.
+
+#### Architecture Change
+
+**Before:**
+```
+Commands → Phase Files → Templates → Standards (duplicated)
+                    ↓
+              Workflows (unused/incomplete)
+```
+
+**After:**
+```
+Commands → Phase Files → Workflows → Standards (single source of truth)
+```
+
+**Unified Architecture:**
+- Single-Agent Mode: Commands → Phase Files → Workflows → Standards
+- Multi-Agent Mode: Commands → Subagents → Workflows → Standards
+- Both modes converge at Workflows → Standards (shared, no duplication)
+
+#### Files Eliminated
+
+**Templates Folder Deleted:**
+- ❌ bug-report-template.md (214 lines)
+- ❌ test-plan-template.md (253 lines)
+- ❌ test-cases-template.md (323 lines)
+- ❌ feature-knowledge-template.md (129 lines)
+- ❌ feature-test-strategy-template.md (191 lines)
+- **Total:** ~1,110 lines eliminated
+
+**Duplicate Standards Deleted:**
+- ❌ standards/bugs/bug-template.md (130 lines)
+- ❌ standards/bugs/severity-rules.md (189 lines)
+- ❌ standards/bugs/bug-reporting-standard.md (55 lines)
+- ❌ standards/bugs/bug-analysis.md (44 lines)
+- ❌ standards/testcases/test-case-standard.md (64 lines)
+- ❌ standards/testcases/test-case-structure.md (38 lines)
+- **Total:** ~520 lines eliminated
+
+**Grand Total Eliminated:** ~1,630 lines of duplicate content
+
+#### Unified Standards Created
+
+**Bug Reporting Standard:**
+- File: `standards/bugs/bug-reporting.md` (255 lines)
+- Consolidates: 6 files (657 lines) → 61% reduction
+- Contains: Structure + severity rules + analysis + workflow + examples
+
+**Test Plan Standard:**
+- File: `standards/testcases/test-plan.md` (254 lines)
+- Replaces: test-plan-template.md + scattered standards
+- Contains: Structure + field definitions + best practices + gap detection
+
+**Test Cases Standard:**
+- File: `standards/testcases/test-cases.md` (445 lines)
+- Consolidates: 3 files (425 lines)
+- Contains: Structure + guidelines + types + automation + best practices
+
+**Feature Standards:**
+- Folder: `standards/features/`
+- Files: feature-knowledge.md (129 lines), feature-test-strategy.md (191 lines)
+- Moved from templates/ to standards/
+
+#### Workflows Completed
+
+**Bug Reporting Workflow:**
+- File: `workflows/bug-tracking/bug-reporting.md`
+- Status: Replaced incomplete stub with comprehensive 6-step workflow
+- References: bug-reporting.md standard as single source of truth
+
+**Updated Workflows:**
+- requirement-analysis.md → References test-plan.md standard
+- testcase-generation.md → References test-cases.md standard
+
+#### Command Phase Files Updated
+
+**Reduced Inline Duplication:**
+- `/report-bug` Phase 4: 390 lines → ~40 lines (90% reduction)
+- `/plan-ticket` Phase 3: Updated to reference workflows
+- `/generate-testcases` Phase 3: Updated to reference workflows
+
+#### Benefits
+
+✅ **Token Efficiency:** ~1,630 lines eliminated (~40-50% reduction in QA documentation)
+✅ **Single Source of Truth:** No duplication between templates and standards
+✅ **Single Maintenance Point:** Add field once in standard, done
+✅ **Clearer Architecture:** Commands → Workflows → Standards (simple flow)
+✅ **No Information Loss:** All content preserved in unified standards
+✅ **Workflow Integration:** Workflows now complete and integrated into command flow
+
+#### Migration
+
+No migration required. Changes apply to new documents generated after this release. Existing generated documents remain unchanged.
+
+#### Breaking Changes
+
+**For Custom Commands:**
+- If you reference `@qa-agent-os/templates/*`, update to `@qa-agent-os/standards/*`
+- Template paths no longer valid
+
+**For Custom Workflows:**
+- Update template references to standard references
+- Example: `templates/bug-report-template.md` → `standards/bugs/bug-reporting.md`
+
+#### Technical Details
+
+- Spec: `agent-os/specs/2025-12-01-eliminate-template-duplication/`
+- Files created: 5 unified standards
+- Files deleted: 12 templates + 6 duplicate standards
+- Workflows completed: 3
+- Command phase files updated: 3
+
+---
+
+## [0.5.0] - 2025-12-01
+
+### Streamlined Ticket Planning Outputs - File Noise Reduction
+
+This release significantly reduces file clutter in ticket planning by eliminating redundant summary files while preserving all valuable information in enhanced core documents.
+
+#### Changes
+
+**Files Eliminated (Per Ticket):**
+- ❌ **README.md** - Removed (duplicated test-plan.md content)
+- ❌ **TEST_PLAN_SUMMARY.md** - Prevented (Claude-generated summary, now in test-plan.md)
+- ❌ **TESTCASE_GENERATION_SUMMARY.md** - Prevented (Claude-generated summary, now in test-cases.md)
+- ❌ **COLLECTION_LOG.md** - Removed (temporary process tracking, info moved to test-plan.md Section 1)
+
+**Result:** File count reduced from **7-8 files** to **2-4 files** per ticket (test-plan.md, test-cases.md, documentation/, optional bugs/)
+
+#### Enhanced Templates
+
+**test-plan-template.md Enhancements:**
+- Added Executive Summary to Section 2 (Ticket Overview)
+- Added Coverage Summary stats to Section 5 (Test Coverage Matrix)
+- Enhanced Section 9 (Execution Timeline) with status tracking and owner columns
+- Added status icons: ✅ Complete, 🔄 In Progress, ⏳ Not Started, ⚠️ Blocked
+- **NEW Section 12: Gap Detection Log** - Tracks gap analysis, feature knowledge updates, and traceability
+- Updated from 11 sections to 12 sections
+
+**test-cases-template.md Enhancements:**
+- **NEW: Test Cases Overview section** - Includes type/priority/automation distribution, coverage stats, critical testing areas
+- **NEW: Generation History section** - Version tracking for test case generations and regenerations
+- **NEW: Recommended Execution Schedule** - Day-by-day execution plan with time estimates
+- Enhanced Coverage Analysis section with requirements coverage table
+- Enhanced Automation Recommendations with priority-based candidates
+
+#### Workflow Updates
+
+**requirement-analysis.md:**
+- Added explicit instructions to NOT create README.md, TEST_PLAN_SUMMARY.md, or COLLECTION_LOG.md
+- Enhanced completion message with gap detection summary and coverage stats
+- Updated to create 12-section test plans (added Gap Detection Log)
+
+**testcase-generation.md:**
+- Added explicit instructions to NOT create TESTCASE_GENERATION_SUMMARY.md or other meta-files
+- Enhanced completion message with priority distribution, automation status, and coverage stats
+- All summary information now included in test-cases.md structure
+
+**Phase Files:**
+- Updated `2-gather-ticket-docs.md` - Removed COLLECTION_LOG.md generation
+- Phase 1 unchanged (README.md was never explicitly created in phase files)
+
+#### Benefits
+
+✅ **Reduced File Noise:** 43-50% fewer files per ticket (7-8 → 2-4 files)
+✅ **No Information Loss:** All summary data preserved in enhanced templates
+✅ **Better Organization:** Gap detection, coverage stats, and status tracking integrated into core documents
+✅ **Single Source of Truth:** test-plan.md and test-cases.md contain everything needed
+✅ **Backward Compatible:** Existing tickets unchanged, improvements apply to new tickets only
+
+#### Migration
+
+No migration required. Changes apply only to new tickets created after this release. Existing tickets with old file structure remain unchanged.
+
+#### Technical Details
+
+- Spec: `agent-os/specs/2025-12-01-streamline-ticket-planning-outputs/`
+- 6 files modified
+- 2 templates enhanced
+- 2 workflows updated
+- 1 phase file updated
+
+---
+
 ## [0.4.0] - 2025-11-24
 
 ### QA Workflow Phase 2 - Bug Reporting and Lifecycle Management

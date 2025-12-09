@@ -1,272 +1,326 @@
-# Phase 1: Collect Details
+# Phase 1: Auto-Increment Bug ID and Title Collection
 
-## Bug Details Collection
+## Purpose
 
-This phase collects all required bug information, adapting to interactive or direct mode.
-
-### Variables from Phase 0
-
-Required from previous phase:
-- `FEATURE_NAME` - The feature name
-- `TICKET_ID` - The ticket identifier
-- `TICKET_PATH` - Path to ticket folder
-- `BUG_ID` - Assigned bug ID (e.g., BUG-001)
-- `BUG_PATH` - Full path to bug file
-- `MODE` - interactive or direct
+Determine the next sequential bug ID and collect the bug title to create the folder structure.
 
 ---
 
-## Interactive Mode
+## Step 1: Determine Auto-Incremented Bug ID
 
-If `MODE=interactive`, present guided questionnaire:
+Using the feature path detected in Phase 0, scan for existing bugs and auto-increment the ID:
 
-### Step 1: Bug Title
+```bash
+# Call bug-id-utils function
+find_next_bug_id "$FEATURE_PATH"
+```
+
+**Process:**
+1. Scan `$FEATURE_PATH/bugs/` directory for existing `BUG-*` folders
+2. Extract numeric IDs from existing folders (e.g., BUG-001, BUG-002)
+3. Find the maximum ID number
+4. Generate next sequential ID with zero-padding (e.g., BUG-003)
+
+**Display assigned ID:**
+
+```
+Determining next bug ID...
+
+Existing bugs in feature:
+  BUG-001-login-form-validation-error
+  BUG-002-payment-processing-timeout
+
+Next available bug ID: BUG-003
+```
+
+**If no bugs exist yet:**
+
+```
+Determining next bug ID...
+
+No existing bugs found in feature.
+
+Next available bug ID: BUG-001
+```
+
+---
+
+## Step 2: Collect Bug Title
+
+Ask user for a short, descriptive bug title:
 
 ```
 Bug Title:
-  Format: [COMPONENT] - [Brief Summary]
+  Format: [Component] - [Brief Summary]
   Example: "Checkout - Submit button returns 500 error"
+  Recommended: 20-40 characters after shortening
+  Max: 100 characters
 
 Enter bug title:
-> [User input]
 ```
 
 **Validation:**
-- Title is required
-- Should be descriptive but concise (under 100 characters recommended)
+- Title is required (not empty)
+- Title should be descriptive but concise
+- Title will be converted to URL-friendly folder name
 
-### Step 2: Environment
+**Handle empty input:**
 
 ```
-Environment Details:
+Title cannot be empty. Please provide a descriptive title.
+
+Enter bug title:
+```
+
+---
+
+## Step 3: Sanitize Title for Folder Naming
+
+Convert user-provided title to URL-friendly format:
+
+```bash
+# Call sanitize function
+sanitized_title=$(sanitize_bug_title "$user_title")
+```
+
+**Sanitization rules:**
+- Convert to lowercase
+- Replace spaces and special characters with hyphens
+- Keep only alphanumeric characters and hyphens
+- Remove consecutive hyphens
+- Truncate to 40 characters (recommended max)
+- Remove trailing hyphens
+
+**Examples:**
+```
+User input:  "Login Form - Validation Error!"
+Sanitized:   "login-form-validation-error"
+
+User input:  "Checkout Payment Timeout @ Gateway"
+Sanitized:   "checkout-payment-timeout-gateway"
+
+User input:  "User's Email Domain.com (Critical Issue)"
+Sanitized:   "users-email-domain-com-critical-issue"
+```
+
+---
+
+## Step 4: Display Folder Name Preview
+
+Show the user what the bug folder will be named:
+
+```
+Sanitized bug title: [sanitized-title]
+
+Bug folder will be created at:
+  qa-agent-os/features/[feature-name]/bugs/BUG-003-[sanitized-title]/
+
+Subfolders will be created:
+  ├── bug-report.md
+  ├── screenshots/
+  ├── logs/
+  ├── videos/
+  └── artifacts/
+
+Is this folder name acceptable? [y/n]
+```
+
+**If user says no:**
+
+```
+You can:
+  [1] Provide a different title and regenerate folder name
+  [2] Keep current suggestion and continue
+  [3] Cancel bug creation
+
+Select [1-3]:
+```
+
+**If user selects [1]:**
+```
+Enter new bug title:
+```
+(Loop back to Step 2)
+
+**If user selects [2] or [3]:**
+```
+Proceeding with folder name: BUG-003-[sanitized-title]
+```
+
+---
+
+## Step 5: Collect Bug Details
+
+Now collect detailed information about the bug:
+
+### Sub-step 5.1: Summary
+
+```
+Bug Summary (2-3 sentences):
+  What's broken, who's affected, impact, reproducibility?
+
+Example: "When users submit the login form with invalid email
+format, no validation error is displayed. This affects all users
+attempting login with malformed email addresses. The bug is
+consistently reproducible on all browsers."
+
+Enter summary:
+```
+
+### Sub-step 5.2: Environment Details
+
+```
+Environment Information:
 
 1. Operating System (e.g., Windows 11, macOS 14, Ubuntu 22.04):
-   > [User input]
+   >
 
-2. Browser / Device (e.g., Chrome 120, Safari 17, iPhone 15):
-   > [User input]
+2. Browser / Device (e.g., Chrome 121, Safari 17, iPhone 15 iOS 17):
+   >
 
 3. Environment (Dev / Staging / Production):
-   > [User input]
+   >
 
 4. Build / Version (e.g., v2.5.1, commit abc123):
-   > [User input]
+   >
 
 5. Feature Flags / Config (if applicable, or enter "N/A"):
-   > [User input]
+   >
 ```
 
-### Step 3: Component / Area
+### Sub-step 5.3: Component / Area
 
 ```
 Which component or area is affected?
-  Example: "Login Module", "Payment API", "User Dashboard"
+  Example: "User Authentication", "Payment Processing", "Search Index"
 
-Enter component:
-> [User input]
+Component/Area:
 ```
 
-### Step 4: Preconditions
+### Sub-step 5.4: Related Ticket (Optional)
 
 ```
-Preconditions (state required before reproduction):
-  Example: "User must be logged in with a valid account"
+Which ticket(s) does this bug affect? (optional)
+  Format: Single ticket (TICKET-123) or comma-separated (TICKET-123, TICKET-124)
+  Leave blank if bug is not related to specific ticket(s)
 
-Enter preconditions (or "None" if not applicable):
-> [User input]
+Related Ticket(s):
 ```
 
-### Step 5: Steps to Reproduce (Required)
+**Store as:**
+```
+TICKET_REF=[user-input or "Not specified"]
+```
+
+---
+
+## Step 6: Reproduction Steps
+
+Collect detailed reproduction information:
+
+### Sub-step 6.1: Preconditions
 
 ```
-Steps to Reproduce:
+What conditions must be met before the bug can occur?
+  Example: "User account exists with valid credentials, user is on login page"
 
-Enter each step on a new line. Include specific data values.
-Type "DONE" on a new line when finished.
+Preconditions:
+```
+
+### Sub-step 6.2: Steps to Reproduce
+
+```
+Enter steps to reproduce (numbered list):
+  Include specific data values and observable results
+
+Format:
+  1. [Action with specific data]
+  2. [Next action]
+  3. [Observable result]
+  ...
 
 Example:
-  1. Navigate to /checkout page
-  2. Add item "Product ABC" to cart
-  3. Click "Submit Order" button
-  4. Observe error
+  1. Navigate to /login
+  2. Enter email: "invalidemail.com" (missing @)
+  3. Enter password: "correctpassword"
+  4. Click "Sign In" button
+     -> Form should display validation error
+  5. Observe that no error message appears
 
 Enter steps:
-> [User input - multiline until "DONE"]
 ```
 
-**Validation:**
-- At least one step is required
-- Steps should be specific and actionable
-
-### Step 6: Expected Result
+### Sub-step 6.3: Expected vs Actual
 
 ```
-Expected Result:
-  What should have happened according to requirements?
+Expected Behavior:
+  What should happen per requirements?
 
-Enter expected result:
-> [User input]
+Enter expected behavior:
 ```
 
-### Step 7: Actual Result
-
 ```
-Actual Result:
-  What actually happened? Include exact error messages if any.
+Actual Behavior:
+  What actually happened, including exact error messages?
 
-Enter actual result:
-> [User input]
+Enter actual behavior:
 ```
 
-### Step 8: Reproducibility
+### Sub-step 6.4: Reproducibility
 
 ```
-Reproducibility:
+How often can you reproduce this bug?
 
-1. How often does this occur?
-   [1] Always (100%)
-   [2] Frequently (>50%)
-   [3] Sometimes (10-50%)
-   [4] Rarely (<10%)
-   [5] Once (unable to reproduce again)
+Options:
+  [1] Always - Bug reproduces consistently
+  [2] Intermittent - Bug reproduces sometimes
 
-Select [1-5]:
-> [User input]
+Select [1-2]:
+```
 
-2. Attempts made (e.g., "5 out of 5"):
-   > [User input]
+**If intermittent:**
+```
+Approximately how often does it reproduce?
+  Example: "3 out of 5 attempts", "Every 2nd refresh", "After 10 minutes"
 
-3. Any variations or conditions affecting reproducibility:
-   > [User input or "None"]
+Frequency:
 ```
 
 ---
 
-## Direct Mode
+## Set Variables for Next Phase
 
-If `MODE=direct`, parse and validate parameters:
-
-### Required Parameters
-
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `--title` | Bug title (required) | `--title "Checkout fails"` |
-
-### Optional Parameters
-
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `--severity` | Pre-set severity | `--severity S2` |
-| `--steps` | Steps to reproduce | `--steps "1. Go to /login\n2. Click submit"` |
-| `--expected` | Expected result | `--expected "Login succeeds"` |
-| `--actual` | Actual result | `--actual "500 error shown"` |
-| `--environment` | Environment string | `--environment "Chrome 120, Staging"` |
-| `--component` | Component/area | `--component "Login Module"` |
-| `--reproducibility` | Rate | `--reproducibility "Always"` |
-
-### Parameter Validation
+After collecting all details:
 
 ```
-Validating parameters...
-
-Required fields:
-  [OK] --title: "[title value]"
-
-Optional fields:
-  [OK] --severity: S2 (provided)
-  [MISSING] --steps: Will prompt during evidence collection
-  [OK] --expected: "[value]"
-  [OK] --actual: "[value]"
-  [MISSING] --environment: Will prompt for details
-```
-
-**If required fields missing:**
-```
-Error: Missing required parameter --title
-
-Usage:
-  /report-bug --title "Bug title" [--severity S1-S4] [--steps "..."]
-
-Or run without parameters for interactive mode:
-  /report-bug
-```
-
-### Fill Missing Optional Fields
-
-For any missing optional fields in direct mode, prompt minimally:
-
-```
-Some optional details not provided. Quick prompts:
-
-Environment (or press Enter to skip):
-> [User input]
-
-Steps to reproduce (one per line, DONE to finish):
-> [User input]
+Export variables:
+  BUG_ID=BUG-003
+  SANITIZED_TITLE=[sanitized-title]
+  BUG_SUMMARY=[user-provided-summary]
+  BUG_ENVIRONMENT=[collected-environment]
+  BUG_COMPONENT=[component-area]
+  BUG_TICKET=[ticket-reference or empty]
+  BUG_PRECONDITIONS=[preconditions]
+  BUG_STEPS=[numbered-steps]
+  BUG_EXPECTED=[expected-behavior]
+  BUG_ACTUAL=[actual-behavior]
+  BUG_REPRODUCIBILITY=[always|intermittent-frequency]
 ```
 
 ---
 
-## Store Collected Details
-
-Compile all information into BUG_DETAILS variable:
+## Success Message
 
 ```
-BUG_DETAILS={
-  title: "[Bug Title]",
-  component: "[Component/Area]",
-  environment: {
-    os: "[Operating System]",
-    browser: "[Browser/Device]",
-    env_type: "[Dev/Staging/Production]",
-    build: "[Build/Version]",
-    feature_flags: "[Flags or N/A]"
-  },
-  preconditions: "[Preconditions]",
-  steps: [
-    "[Step 1]",
-    "[Step 2]",
-    "[Step 3]"
-  ],
-  expected_result: "[Expected Result]",
-  actual_result: "[Actual Result]",
-  reproducibility: {
-    rate: "[Always/Frequently/Sometimes/Rarely/Once]",
-    attempts: "[X out of Y]",
-    notes: "[Variations or None]"
-  }
-}
+✓ Bug ID and title determined: BUG-003-[sanitized-title]
+✓ Bug details collected:
+  - Summary: [first 50 chars...]
+  - Environment: [OS, Browser, Environment]
+  - Steps: [number of steps collected]
+
+Proceeding to Phase 2: Supporting Materials Collection
 ```
 
-### Summary Display
+---
 
-```
-Bug details collected:
-
-Title: [title]
-Component: [component]
-Environment: [env_type] - [browser] on [os]
-Build: [build]
-Steps: [count] steps captured
-Reproducibility: [rate]
-
-Proceeding to Phase 2: Collect Evidence
-```
-
-### Set Variables for Next Phase
-
-Pass to Phase 2:
-```
-FEATURE_NAME=[feature-name]
-TICKET_ID=[ticket-id]
-TICKET_PATH=[path]
-BUG_ID=[bug-id]
-BUG_PATH=[path]
-MODE=[mode]
-BUG_DETAILS=[details object]
-PRESET_SEVERITY=[severity if provided in direct mode, else null]
-```
-
-### Next Phase
-
-Continue to Phase 2: Collect Evidence
+*Collect comprehensive bug details with user guidance to ensure quality bug reports.*

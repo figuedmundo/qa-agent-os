@@ -1,170 +1,153 @@
-# Phase 0: Detect Context
+# Phase 0: Detect Feature Context for Feature-Level Bug Reporting
 
-## Smart Context Detection
+## Purpose
 
-This phase intelligently detects the ticket context for bug reporting and sets up the bug file location.
+Auto-detect the feature context from the current working directory, with manual fallback if detection fails.
+
+## Context Detection
+
+This phase performs intelligent feature context detection:
 
 **I will check:**
 
-1. **Which feature does this bug belong to?** - Detect and select from available features
-2. **Which ticket does this bug belong to?** - Detect and select from tickets within the feature
-3. **What is the next bug ID?** - Auto-increment from existing bugs
+1. **Is the user running from a feature directory?** - Auto-detect feature context from working directory path
+2. **Validate the feature exists** - Confirm feature directory structure is valid
+3. **Prepare for feature-level bug organization** - Set up variables for feature-level bug creation
 
-### Feature Selection
+---
 
-Scan `qa-agent-os/features/` for available features:
+## Smart Feature Detection
 
-**If multiple features exist:**
+### Detection Method
+
+Parse the current working directory (`pwd`) to find feature context:
+
+**Supported directories:**
+- `/qa-agent-os/features/[feature-name]/` (feature root)
+- `/qa-agent-os/features/[feature-name]/bugs/` (bugs directory)
+- `/qa-agent-os/features/[feature-name]/bugs/BUG-00X/` (within a bug folder)
+- `/qa-agent-os/features/[feature-name]/[TICKET-ID]/` (ticket directory within feature)
+
+### Automatic Detection Success
+
+If feature is detected automatically:
+
 ```
-Which feature does this bug belong to?
+Found feature context: payment-gateway
+
+Feature Path: /path/to/qa-agent-os/features/payment-gateway
+Feature Status: Valid
+
+Proceeding with feature-level bug reporting...
+```
+
+### Automatic Detection Failure
+
+If feature is not detected from working directory:
+
+```
+WARNING: Could not detect feature context from current directory.
+
+Please run this command from a feature directory:
+  cd qa-agent-os/features/[feature-name]/
+
+Available options:
+  [1] Run /report-bug from feature directory (automatic detection)
+  [2] Specify feature manually with parameter: /report-bug --feature payment-gateway
+
+Which would you prefer?
+```
+
+### Manual Feature Selection
+
+If detection fails or user requests manual selection, provide directory scan:
+
+```
+Scanning for available features...
 
 Features found:
-  [1] Feature-Name-1
-  [2] Feature-Name-2
-  [3] Feature-Name-3
+  [1] payment-gateway
+  [2] user-authentication
+  [3] product-catalog
 
-Select [1-N]:
+Which feature has the bug? [1-3]:
 ```
 
-**If only ONE feature exists:**
+**If user selects a feature:**
 ```
-Found feature: [Feature Name]. Is this correct? [y/n]
-```
+Selected feature: payment-gateway
 
-**If NO features exist:**
-```
-No features found. Please create a feature first:
-  /plan-feature [feature-name]
-Then run /plan-ticket to create a ticket structure.
-```
+Validating feature structure...
+✓ Feature directory exists
+✓ Feature has feature-knowledge.md
+✓ Ready for bug reporting
 
-### Ticket Selection
-
-Once feature is selected, scan `qa-agent-os/features/[feature-name]/` for tickets:
-
-**If multiple tickets exist:**
-```
-Which ticket does this bug belong to?
-
-Tickets in [Feature Name]:
-  [1] WYX-125 (updated 2 hours ago)
-  [2] WYX-124 (updated 1 day ago)
-  [3] WYX-123 (updated 3 days ago)
-
-Select [1-N]:
+Proceeding with feature-level bug reporting...
 ```
 
-**If only ONE ticket exists:**
-```
-Found ticket: [Ticket ID]. Is this correct? [y/n]
-```
+---
 
-**If NO tickets exist:**
-```
-No tickets found in feature [Feature Name]. Please create a ticket first:
-  /plan-ticket [ticket-id]
-Then return to report the bug.
-```
+## Feature Validation
 
-### Ticket Validation
+Once a feature is detected or selected, validate it:
 
-Verify ticket structure exists:
-
-**Check: Ticket folder exists**
+**Check 1: Feature directory exists**
 ```bash
-qa-agent-os/features/[feature-name]/[ticket-id]/
+qa-agent-os/features/[feature-name]/
 ```
 
-**If ticket folder doesn't exist:**
+**Check 2: Feature has valid structure**
+- Should contain: `feature-knowledge.md`, or `[TICKET-ID]/` directories
+- Should be readable and writable
+
+**If feature is invalid:**
 ```
-Error: Ticket [ticket-id] not found.
+ERROR: Feature structure invalid.
 
-Have you run /plan-ticket yet?
-  /plan-ticket [ticket-id]
+Expected:
+  qa-agent-os/features/payment-gateway/
+    ├── feature-knowledge.md
+    ├── feature-test-strategy.md
+    └── [TICKET-001]/
+        ├── test-plan.md
+        └── test-cases.md
 
-This creates the ticket structure needed for bug reporting.
-```
-
-### Bug Folder Setup
-
-Create bugs subfolder if it doesn't exist:
-```bash
-qa-agent-os/features/[feature-name]/[ticket-id]/bugs/
-```
-
-### Auto-Increment Bug ID
-
-Scan existing bugs in the ticket folder to determine next ID:
-
-```bash
-# Scan for existing BUG-*.md files
-qa-agent-os/features/[feature-name]/[ticket-id]/bugs/BUG-*.md
+Has this feature been set up with /plan-feature?
 ```
 
-**ID Assignment Logic:**
-- If no bugs exist: `BUG-001`
-- If BUG-001, BUG-002 exist: `BUG-003`
-- Always zero-padded to 3 digits (001, 002, ..., 999)
+---
 
-Display assigned ID:
-```
-Bug ID assigned: BUG-[XXX]
+## Next Phase: Auto-Increment Bug ID
 
-Bug will be saved to:
-  qa-agent-os/features/[feature-name]/[ticket-id]/bugs/BUG-[XXX].md
-```
+Once feature context is established, the next phase will:
 
-### Mode Detection
+1. Call `find_next_bug_id()` to determine next sequential bug ID
+2. Collect bug title from user
+3. Sanitize title for folder naming
+4. Proceed with bug details collection
 
-Check if direct mode parameters were provided:
+---
 
-**Direct Mode Indicators:**
-- `--title "Bug title"` parameter present
-- `--severity S1|S2|S3|S4` parameter present (optional)
-- Other parameters like `--steps`, `--expected`, `--actual`
+## Set Variables for Next Phase
 
-**If direct mode:**
-```
-Direct mode detected. Validating parameters...
-
-Required: --title
-Optional: --severity, --steps, --expected, --actual, --environment
-
-Provided parameters:
-  --title: [value]
-  --severity: [value or "not provided - will classify"]
-```
-
-**If interactive mode (no parameters):**
-```
-Interactive mode. I'll guide you through bug reporting step by step.
-```
-
-### Set Variables for Next Phase
-
-Once context is established:
-```
-FEATURE_NAME=[feature-name]
-TICKET_ID=[ticket-id]
-TICKET_PATH=qa-agent-os/features/[feature-name]/[ticket-id]
-BUG_ID=BUG-[XXX]
-BUG_PATH=[TICKET_PATH]/bugs/BUG-[XXX].md
-BUGS_FOLDER=[TICKET_PATH]/bugs
-MODE=[interactive|direct]
-```
-
-### Success Confirmation
+Once feature is validated:
 
 ```
-Context established:
-  Feature: [FEATURE_NAME]
-  Ticket: [TICKET_ID]
-  Bug ID: [BUG_ID]
-  Mode: [MODE]
-
-Proceeding to Phase 1: Collect Details
+Export for next phases:
+  FEATURE_NAME=[feature-name]
+  FEATURE_PATH=/full/path/to/feature
+  MODE=[interactive|direct]
 ```
 
-### Next Phase
+### Success Message
 
-Continue to Phase 1: Collect Details
+```
+✓ Feature context established: [feature-name]
+✓ Bug will be saved at: qa-agent-os/features/[feature-name]/bugs/BUG-00X-[title]/
+
+Proceeding to Phase 1: Auto-Increment and Title Collection
+```
+
+---
+
+*Feature-level context detection enables smart bug placement without manual feature selection in most cases.*

@@ -50,9 +50,10 @@ The content layer containing:
 - `folder-structures/` — Directory structure templates
 
 **`commands/`** — Discrete AI agent commands (compiled into `.claude/commands/qa-agent-os/` for Claude Code or `.gemini/commands/` with `.toml` files for Gemini 3)
-- `plan-product/` — Create product mission documentation (Phase 1: gather concepts, Phase 2: create mission)
-- `plan-feature/` — Plan entire feature with 4 phases: init structure, gather docs, consolidate knowledge, create test strategy
-- `plan-ticket/` — Plan ticket testing with 5 phases: smart detection, init ticket, gather docs, analyze requirements with gap detection, optional test case generation
+- `start-feature/` — Initialize feature folder structure only
+- `start-ticket/` — Initialize ticket folder structure with smart feature detection
+- `gather-docs/` — Display documentation gathering guidance (user-driven, no automation)
+- `analyze-requirements/` — Analyze gathered documentation and create knowledge/strategy/test plans based on context
 - `generate-testcases/` — Generate or regenerate test cases from test-plan.md
 - `revise-test-plan/` — Update test plans during testing with revision tracking
 - `update-feature-knowledge/` — Manually update feature knowledge (rare)
@@ -94,59 +95,127 @@ project/
 
 ## QA Workflow Commands
 
-The redesigned QA workflow provides 5 orchestrated commands that handle the complete feature and ticket planning lifecycle:
+The redesigned QA workflow provides 4 modular commands that separate concerns: structure initialization, documentation gathering, and analysis.
 
-### `/plan-feature` Command
-**Purpose:** Complete feature planning in one orchestrated command (4 phases)
+### `/start-feature` Command
+**Purpose:** Initialize feature folder structure only
 
 **Workflow:**
-1. **Phase 1:** Initialize feature folder structure
-2. **Phase 2:** Gather documentation (BRD, API specs, mockups, technical docs)
-3. **Phase 3:** Consolidate knowledge into `feature-knowledge.md` (8 sections)
-4. **Phase 4:** Create `feature-test-strategy.md` (10 sections) with testing approach
+1. Accept feature name as parameter or interactive prompt
+2. Normalize to lowercase kebab-case format
+3. Check if feature already exists (prompt for overwrite)
+4. Create folder structure: `qa-agent-os/features/[feature-name]/documentation/`
+5. Display success message with next steps
 
-**Usage:** `/plan-feature "Feature Name"`
+**Usage:** `/start-feature "Feature Name"`
 
 **Creates:**
 ```
 features/[feature-name]/
-├── documentation/          # Collected raw documents
-├── feature-knowledge.md    # Consolidates WHAT is being built
-└── feature-test-strategy.md # Defines HOW it will be tested
+└── documentation/          # For BRD, API specs, mockups, technical docs
 ```
 
-### `/plan-ticket` Command
-**Purpose:** Plan ticket testing with intelligent feature detection and gap detection (3-5 phases)
+**Next Steps:** Run `/gather-docs` then `/analyze-requirements`
+
+### `/start-ticket` Command
+**Purpose:** Initialize ticket folder structure with smart feature detection
 
 **Smart Features:**
-- **Phase 0:** Smart Detection & Routing
-  - Detects existing features automatically
-  - If ticket exists, offers re-execution options: [1] Full re-plan [2] Update plan only [3] Regenerate cases only [4] Cancel
-  - If new ticket, auto-selects feature or prompts for selection
+- Detects existing features automatically
+- If no features exist, displays error with guidance
+- If single feature exists, auto-selects with confirmation
+- If multiple features exist, prompts for selection
 
-- **Phase 1:** Initialize Ticket Structure
-- **Phase 2:** Gather Ticket Documentation
-- **Phase 3:** Analyze Requirements & Detect Gaps
-  - Compares ticket requirements to feature-knowledge.md
-  - Identifies new rules, APIs, edge cases
-  - Prompts to append gaps to feature knowledge
+**Workflow:**
+1. Accept ticket ID as parameter or interactive prompt
+2. Scan for existing features in `qa-agent-os/features/`
+3. Guide feature selection or creation
+4. Check if ticket already exists (prompt for overwrite)
+5. Create folder structure: `qa-agent-os/features/[feature-name]/[ticket-id]/documentation/`
+6. Display success message with next steps
 
-- **Phase 4:** Generate Test Cases (Optional)
-  - After Phase 3 completes, offers: [1] Generate now [2] Stop for review
-  - Flexible execution: can generate later with `/generate-testcases`
-
-**Usage:** `/plan-ticket [ticket-id]`
+**Usage:** `/start-ticket "TICKET-123"`
 
 **Creates:**
 ```
 features/[feature-name]/[ticket-id]/
-├── documentation/          # Ticket-specific documents
-├── test-plan.md           # 11 sections with requirements, coverage, scenarios
-└── test-cases.md          # Detailed executable test cases (if generated)
+└── documentation/          # For ticket-specific docs, acceptance criteria, specs
 ```
 
+**Next Steps:** Run `/gather-docs` then `/analyze-requirements`
+
+### `/gather-docs` Command
+**Purpose:** Display documentation gathering guidance (user-driven, no automation)
+
+**Smart Context Detection:**
+- Detects feature context from directory: `qa-agent-os/features/[feature-name]/`
+- Detects ticket context from directory: `qa-agent-os/features/[feature-name]/[ticket-id]/`
+- Falls back to interactive menu if context unclear
+
+**Feature Context Guidance:**
+Recommends: BRD, API specifications, UI mockups, technical architecture, database schema, feature-specific docs
+
+**Ticket Context Guidance:**
+Recommends: Ticket description, acceptance criteria, API details, screen mockups, technical notes, test data examples
+
+**Key Feature:** No file operations performed. User manually adds documentation files to the guidance target path.
+
+**Supports Re-execution:** Display guidance as many times as needed
+
+**Usage:** `/gather-docs` (run from feature or ticket directory)
+
+### `/analyze-requirements` Command
+**Purpose:** Analyze gathered documentation and create knowledge/strategy/test plans based on context
+
+**Smart Context Detection:**
+- Detects feature context from directory: `qa-agent-os/features/[feature-name]/`
+- Detects ticket context from directory: `qa-agent-os/features/[feature-name]/[ticket-id]/`
+- Falls back to interactive menu if context unclear
+
+**Feature Context Behavior:**
+1. Validates documentation folder exists and has files
+2. Checks for existing analysis documents
+3. Analyzes all documentation
+4. Creates `feature-knowledge.md` (8 sections: Overview, Business Rules, API Endpoints, Data Models, Edge Cases, Dependencies, Open Questions, References)
+5. Creates `feature-test-strategy.md` (10 sections: Testing Approach, Tools, Environment, Test Data Strategy, Risks, Entry/Exit Criteria, Dependencies, Schedule, Resources, References)
+6. Displays success message with next steps
+
+**Re-execution:** If analysis exists, prompts with options: [1] Full re-analysis [2] Update knowledge only [3] Update strategy only [4] Cancel
+
+**Ticket Context Behavior:**
+1. Validates documentation folder exists and has files
+2. Validates parent feature analysis exists
+3. Checks for existing test plan
+4. Analyzes all documentation
+5. **Runs gap detection:** Compares ticket requirements to feature-knowledge.md
+6. **ALWAYS displays explicit gap detection results when gaps found**
+7. Prompts to append gaps with metadata (source ticket-id, date)
+8. Creates `test-plan.md` (11 sections: Test Objective, Scope, Requirements, Test Approach, Test Environment, Test Scenarios, Test Data, Entry/Exit Criteria, Dependencies, Risks, Revision Log)
+9. Offers test case generation
+10. Displays success message with gap summary and next steps
+
+**Gap Detection Visibility Requirement:**
+When gaps detected:
+```
+GAP DETECTION RESULTS:
+I found [N] gaps between ticket requirements and feature knowledge:
+
+1. [New business rule]: [description]
+2. [New API endpoint]: [description]
+3. [New edge case]: [description]
+
+Would you like me to append these gaps to feature-knowledge.md?
+  [1] Yes, append all gaps
+  [2] Let me review first (show detailed report)
+  [3] No, skip gap updates
+```
+
+**Re-execution:** If test plan exists, prompts with options: [1] Full re-analysis [2] Append [3] Cancel
+
+**Usage:** `/analyze-requirements` (run from feature or ticket directory)
+
 ### `/generate-testcases` Command
-**Purpose:** Generate or regenerate test cases from test-plan.md (standalone)
+**Purpose:** Generate or regenerate test cases from test-plan.md (standalone, unchanged)
 
 **Features:**
 - Generate test cases if none exist
@@ -156,7 +225,7 @@ features/[feature-name]/[ticket-id]/
 **When to Use:**
 - After reviewing and updating test-plan.md
 - After running `/revise-test-plan` updates
-- Standalone from `/plan-ticket` if you stopped at Phase 3
+- Standalone from `/analyze-requirements` if you stopped for review
 
 ### `/revise-test-plan` Command
 **Purpose:** Update test-plan.md during testing with change tracking
@@ -186,6 +255,18 @@ features/[feature-name]/[ticket-id]/
 
 ## QA Workflow Patterns
 
+### Workflow Separation: User-Driven vs AI-Driven Tasks
+
+**User-Driven Tasks (No Automation):**
+- `/start-feature` - Create structure only
+- `/start-ticket` - Create structure only
+- `/gather-docs` - Display guidance only (user adds files manually)
+
+**AI-Driven Tasks (With Automation):**
+- `/analyze-requirements` - Analyze documentation and create documents
+- `/generate-testcases` - Generate test cases
+- `/revise-test-plan` - Update plans during testing
+
 ### Feature-Level Documentation
 Feature-level documents capture the "WHAT" and strategic "HOW" once:
 
@@ -206,23 +287,24 @@ Ticket-level documents capture specific test planning:
   - Contains ticket-specific requirements, scenarios, test data
   - Inherits strategy from feature-test-strategy.md
   - Includes revision log for iterative updates during testing
-  - Created by `/plan-ticket` or updated by `/revise-test-plan`
+  - Created by `/analyze-requirements` or updated by `/revise-test-plan`
 
 - **test-cases.md**
   - Detailed, executable test cases
   - Generated from test-plan.md sections 6-7
   - Can be regenerated as plan evolves
-  - Created by `/plan-ticket` Phase 4 or `/generate-testcases`
+  - Created by `/generate-testcases`
 
 ### Gap Detection Pattern
-The smart requirement analysis in `/plan-ticket` Phase 3:
+The intelligent requirement analysis in `/analyze-requirements` ticket context:
 
 1. Reads ticket documentation
 2. Compares to existing feature-knowledge.md
-3. Identifies gaps (new rules, APIs, edge cases)
-4. If gaps found, prompts user to append to feature-knowledge.md
-5. Appends with metadata for traceability
-6. Ensures feature knowledge stays current without manual effort
+3. Identifies gaps (new rules, APIs, edge cases, data models)
+4. **ALWAYS explicitly displays gap detection results when gaps found**
+5. If gaps found, prompts user to append to feature-knowledge.md
+6. Appends with metadata for traceability (source ticket-id, timestamp)
+7. Ensures feature knowledge stays current without manual effort
 
 ## Data Flow
 
@@ -312,18 +394,16 @@ The `process_phase_tags()` function replaces these with actual file paths during
 ### Custom Commands for Gemini 3
 Each Gemini command is a `.toml` file that defines a specialized QA persona:
 ```toml
-description = "Plan feature with 4-phase workflow: structure, gather docs, consolidate knowledge, create strategy"
+description = "Initialize feature folder structure"
 prompt = """
-You are a Senior QA Architect specializing in feature planning.
+You are a QA Architect specializing in feature planning.
 
-[Reference @qa-agent-os/standards/testcases/test-case-standard.md]
-[Reference @qa-agent-os/templates/feature-knowledge-template.md]
+Initialize a feature folder structure with:
+- Feature name (normalized to lowercase kebab-case)
+- Validation for existing features
+- Clear guidance on next steps
 
-Execute the following phases:
-1. Initialize feature folder structure
-2. Gather documentation (BRD, API specs, mockups, technical docs)
-3. Consolidate knowledge into feature-knowledge.md (8 sections)
-4. Create feature-test-strategy.md (10 sections) with testing approach
+Reference: @qa-agent-os/standards/features/feature-knowledge.md
 
 Input: {{args}}
 """
@@ -358,7 +438,7 @@ Templates are:
 
 ## Git Workflow
 
-The project uses a feature branch approach. Current branch is `update-installers`. Key files frequently modified:
+The project uses a feature branch approach. Key files frequently modified:
 - `README.md` — User documentation
 - `QA-QUICKSTART.md` — QA workflow quickstart guide
 - `CHANGELOG.md` — Release notes and feature updates
@@ -366,15 +446,16 @@ The project uses a feature branch approach. Current branch is `update-installers
 - `profiles/default/` — All standard content, commands, and templates
 - `scripts/` — Installation and compilation logic
 
-Recent changes focused on implementing the QA Workflow Redesign with 5 orchestrated commands, smart feature detection, gap detection, and flexible test case generation.
+Recent changes focused on implementing the QA Workflow Separation redesign with 4 modular commands that distinguish user-driven tasks from AI-driven tasks, with enhanced gap detection visibility.
 
 ## Success Metrics for QA Workflow
 
-The new workflow improves QA efficiency:
+The modular workflow improves QA efficiency:
 
-- **Command reduction:** 8 commands → 5 orchestrated commands
-- **Planning efficiency:** Single `/plan-ticket` replaces 4 separate commands
-- **Knowledge currency:** Gap detection keeps feature-knowledge.md current
-- **Traceability:** 100% requirement → test case mapping
+- **Separation of Concerns:** Structure, gathering, and analysis as separate commands
+- **Planning Efficiency:** Flexible re-execution without recreating structure
+- **Knowledge Currency:** Gap detection keeps feature-knowledge.md current
+- **Traceability:** 100% requirement → test case mapping with gap detection metadata
 - **Flexibility:** Stop/continue options, regeneration, revision tracking
-- **Usability:** Smart detection reduces user input, helpful errors guide users
+- **User Experience:** Smart context detection reduces user input, helpful errors guide users
+- **Explicit Gap Detection:** Users always see when gaps are detected and can make informed decisions

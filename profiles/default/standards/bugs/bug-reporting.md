@@ -4,18 +4,128 @@ This standard defines bug report structure, severity classification, analysis me
 
 ---
 
+## Feature-Level Organization
+
+Bugs are organized at the **feature level** rather than the ticket level, enabling tracking of bugs that affect multiple tickets or the feature as a whole.
+
+### Folder Structure
+
+```
+qa-agent-os/features/[feature-name]/bugs/
+├── BUG-001-[short-title]/
+│   ├── bug-report.md
+│   ├── screenshots/
+│   ├── logs/
+│   ├── videos/
+│   └── artifacts/
+├── BUG-002-[short-title]/
+│   ├── bug-report.md
+│   ├── screenshots/
+│   ├── logs/
+│   ├── videos/
+│   └── artifacts/
+└── BUG-003-[short-title]/
+    ├── bug-report.md
+    ├── screenshots/
+    ├── logs/
+    ├── videos/
+    └── artifacts/
+```
+
+### Benefits of Feature-Level Organization
+
+- **Multi-Ticket Bugs**: Track bugs affecting multiple tickets without duplication
+- **Organized Evidence**: Semantic subfolders (screenshots/, logs/, videos/, artifacts/) make evidence discovery quick
+- **Stable References**: BUG-001 remains constant; Jira ID stored separately as metadata
+- **Feature Clarity**: All bugs visible at feature level alongside testing and feature knowledge
+- **Better Investigation**: Structured evidence organization reduces time to root cause
+
+---
+
+## Bug ID Format
+
+### Auto-Incremented Sequential IDs
+
+Bug IDs are auto-incremented per feature using zero-padded 3-digit format:
+
+- **Format:** `BUG-XXX` (where XXX is zero-padded to 3 digits)
+- **Examples:** BUG-001, BUG-002, BUG-042, BUG-999
+- **Scope:** Feature-level (each feature has its own BUG-001, BUG-002, etc.)
+- **Stability:** IDs are permanent and never change after folder creation
+- **Auto-Increment:** System automatically generates next ID based on highest existing number
+
+### Folder Naming Convention
+
+Bug folder names combine the auto-incremented ID with a short title:
+
+- **Format:** `BUG-00X-[short-title]`
+- **Short Title:** Derived from bug summary, URL-friendly (lowercase, hyphens, alphanumeric only)
+- **Length:** 20-40 characters recommended for short-title
+- **Examples:**
+  - `BUG-001-login-form-validation-error`
+  - `BUG-002-checkout-payment-timeout`
+  - `BUG-003-currency-conversion-error`
+
+---
+
+## Supporting Materials Organization
+
+Supporting materials are organized into semantic subfolders within each bug folder for easy discovery and categorization.
+
+### Subfolder Types and Content
+
+**screenshots/** - Visual evidence (PNG, JPG, GIF)
+- Screenshots showing visual representation of bug
+- Annotated screenshots highlighting the issue
+- Multiple angles or states of UI
+- Examples: `form-validation-message.png`, `error-state-highlighted.png`
+
+**logs/** - Text diagnostic output (TXT, LOG)
+- Browser console output
+- Server/backend error logs
+- Application logs
+- Database logs
+- Stack traces
+- Examples: `browser-console-2025-12-08.log`, `backend-error-trace.txt`
+
+**videos/** - Screen recordings (MP4, MOV, WebM, AVI)
+- Screen recordings demonstrating repro steps
+- Video showing bug behavior in action
+- Slow-motion recordings for timing-sensitive bugs
+- Examples: `checkout-flow-repro.mp4`, `login-timeout-recording.webm`
+
+**artifacts/** - Complex files and data (HAR, JSON, SQL, XML, CSV, configs)
+- Network traces (HAR files)
+- Request/response payloads (JSON)
+- Database queries and dumps (SQL)
+- Configuration exports
+- Export from browser dev tools
+- Examples: `network-trace-failed-request.har`, `request-payload.json`, `database-transaction-log.sql`
+
+### File Organization Best Practices
+
+- Use descriptive filenames with timestamps when relevant
+- Include timestamps in filename for logs: `error-2025-12-08-14-30.log`
+- Keep filenames URL-friendly (no special characters)
+- Group related files in same subfolder
+- Subfolders can remain empty if no materials of that type
+
+---
+
 ## Document Structure
 
 ### Metadata
 
 | Field | Value | Rules |
 |-------|-------|-------|
-| Bug ID | BUG-XXX | Auto-increment |
-| Feature | [name] | Parent feature |
-| Ticket | [id] | Ticket being tested |
-| Created | [timestamp] | Date/time |
-| Version | 1.0 | Increment with revisions |
-| Status | New | See workflow below |
+| Bug ID | BUG-XXX | Auto-increment per feature |
+| Feature | [name] | Parent feature name |
+| Ticket | [id] | Ticket(s) this bug affects (comma-separated if multiple) |
+| Jira_ID | [id] | External Jira ticket ID (optional, filled when approved) |
+| Created | [timestamp] | Date/time in ISO format (YYYY-MM-DD HH:MM:SS) |
+| Updated | [timestamp] | Last update timestamp |
+| Version | 1.0 | Increment with revisions (major for status changes, minor for updates) |
+| Status | Open | See workflow below |
 
 ### Bug Details
 
@@ -62,12 +172,12 @@ This standard defines bug report structure, severity classification, analysis me
 
 ### Evidence
 
-- Screenshots/Recordings: paths with descriptions
-- Console/Browser Logs: code blocks with timestamps, correlation IDs
-- API Request/Response: JSON format
-- Network Traces: request IDs, HAR files
-- Error Messages: exact messages
-- Additional: database queries, configs, monitoring links
+- **Attachments:** List of supporting materials with descriptions
+  - Format: `- [subfolder]/[filename] - [description]`
+  - Example: `- screenshots/form-validation-message.png - Validation error displayed to user`
+  - Example: `- logs/browser-console-2025-12-08.log - JavaScript error context`
+  - Example: `- videos/checkout-flow-repro.mp4 - Complete repro steps recorded`
+  - Example: `- artifacts/network-trace-failed-request.har - Network trace showing failed payment request`
 
 ### Analysis
 
@@ -89,9 +199,9 @@ This standard defines bug report structure, severity classification, analysis me
 **Status History:**
 | Status | Date | Updated By | Notes |
 |--------|------|------------|-------|
-| New | [date] | [reporter] | Initial report |
+| Open | [date] | [reporter] | Initial report |
 
-**Valid Statuses:** New → In Progress → Ready for QA → Verified → Closed (or Re-opened)
+**Valid Statuses:** Open → In Progress → Approved → Resolved → Closed (or Re-opened)
 
 ### Ownership
 
@@ -107,15 +217,24 @@ Reserved for root cause analysis, fix approach, implementation notes
 
 ### Revision Log
 
-**Version 1.0 - [date]:** Initial report, Severity: [X], Status: New
+Tracks all changes to the bug report with version increments:
 
-*Increment major (X.0) for severity/status changes, minor (X.Y) for additions*
+| Date | Version | Change Type | Details |
+|------|---------|-------------|---------|
+| 2025-12-08 10:00:00 | 1.0 | Initial Report | Bug created, Severity: S2, Status: Open |
+| 2025-12-08 14:30:00 | 1.1 | Evidence Added | Added network trace and error logs |
+| 2025-12-09 09:00:00 | 2.0 | Status Updated | Status changed to Approved, Jira ID: BUG-12345 |
+
+**Version Numbering Rules:**
+- Increment major (X.0) for: Status changes to Approved/Resolved/Closed, or major severity changes
+- Increment minor (X.Y) for: Evidence additions, notes, description updates, severity clarifications
 
 ### References
 
 - Feature Knowledge: `../feature-knowledge.md`
-- Test Plan: `../test-plan.md`
-- Test Cases: `../test-cases.md`
+- Feature Test Strategy: `../feature-test-strategy.md`
+- Test Plan: `../[ticket-id]/test-plan.md`
+- Test Cases: `../[ticket-id]/test-cases.md`
 
 ---
 
@@ -127,7 +246,7 @@ Reserved for root cause analysis, fix approach, implementation notes
 **Criteria:**
 - Data loss/corruption
 - Security vulnerability
-- System crash/unavailability  
+- System crash/unavailability
 - Payment broken
 - No workaround
 - Regulatory breach
@@ -229,7 +348,7 @@ Reserved for root cause analysis, fix approach, implementation notes
 
 **Performance Issues:** Timing measurements, before/after metrics, profiler output
 
-**Always:** Redact PII/secrets, store in `bugs/evidence/`, reference by filename
+**Always:** Redact PII/secrets, store in semantic subfolders (screenshots/, logs/, videos/, artifacts/), reference by path
 
 ## Severity vs Priority
 
@@ -252,4 +371,4 @@ Examples:
 
 ---
 
-*Single source of truth for bug reporting - structure, rules, analysis, workflow in one place.*
+*Single source of truth for bug reporting - structure, rules, analysis, workflow in one place. Feature-level organization enables tracking bugs that span multiple tickets while maintaining organized evidence collection.*

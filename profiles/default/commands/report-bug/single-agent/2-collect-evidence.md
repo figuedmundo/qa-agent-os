@@ -1,355 +1,385 @@
-# Phase 2: Collect Evidence
+# Phase 2: Supporting Materials Organization
 
-## Evidence Collection
+## Purpose
 
-This phase guides collection and organization of evidence to support the bug report.
-
-### Variables from Previous Phases
-
-Required from previous phases:
-- `FEATURE_NAME` - The feature name
-- `TICKET_ID` - The ticket identifier
-- `TICKET_PATH` - Path to ticket folder
-- `BUG_ID` - Assigned bug ID
-- `BUG_PATH` - Full path to bug file
-- `MODE` - interactive or direct
-- `BUG_DETAILS` - Details collected in Phase 1
-- `PRESET_SEVERITY` - Severity if provided in direct mode (may be null)
+Guide the user through providing evidence (screenshots, logs, videos, artifacts) and organize them into appropriate subfolders.
 
 ---
 
-## Evidence Collection Checklist
+## Overview
 
-Present evidence types to collect:
+Supporting materials provide crucial evidence for bug investigation. This phase helps organize materials into semantic subfolders:
+
+- **screenshots/** - Visual evidence (PNG, JPG, GIF)
+- **logs/** - Text diagnostic output (TXT, LOG)
+- **videos/** - Screen recordings (MP4, MOV, WebM, AVI)
+- **artifacts/** - Complex files (HAR, JSON, SQL, XML, CSV)
+
+---
+
+## Step 1: Supporting Materials Menu
+
+Explain the evidence collection process:
 
 ```
-Evidence Collection
+Supporting Materials Collection
+================================
 
-Which types of evidence do you have for this bug?
-Select all that apply (comma-separated, e.g., 1,2,5):
+You can add evidence to help investigate this bug:
 
-  [1] Screenshots / Recordings (file path)
-  [2] Console / Browser logs (file path or paste)
-  [3] API request / response (file path or paste)
-  [4] Network traces (file path or HAR reference)
-  [5] Error messages (paste text)
-  [6] Other evidence
+Evidence Types:
+  [1] Screenshot - Visual evidence (PNG, JPG, GIF)
+  [2] Log - Console or server logs (LOG, TXT)
+  [3] Video - Screen recording (MP4, MOV, WebM)
+  [4] Artifact - Network traces, configs, SQL (HAR, JSON, SQL)
+  [5] Done - Finish collecting evidence
 
-  [0] No additional evidence (skip)
+You can add multiple items of each type.
 
-Select types:
-> [User input, e.g., "1,2,5"]
+Which evidence would you like to add? [1-5]:
 ```
 
 ---
 
-## Evidence Collection by Type
+## Step 2: For Each Evidence Item
 
-### Type 1: Screenshots / Recordings
+Based on user selection, collect evidence:
 
-If user selected [1]:
+### Option 1: Screenshot
 
 ```
-Screenshots / Recordings:
+Screenshot Evidence
+===================
 
-Enter file path(s), one per line. Type "DONE" when finished.
-  Example: ./screenshots/checkout-error.png
+File types: PNG, JPG, GIF
 
-> [User input - file path]
-> [User input - file path]
-> DONE
+Enter file path:
+  (absolute path or relative from current directory)
+  Example: /Users/name/screenshots/login-error.png
+           or: ./screenshots/checkout-form.png
+
+File path:
 ```
 
-**Path Validation:**
-- Check if file exists at specified path
-- If file not found, warn but continue:
-  ```
-  Warning: File not found at [path]. Path will be recorded but verify it exists.
-  ```
+**Validation:**
+```bash
+# Validate file exists
+if [[ ! -f "$file_path" ]]; then
+  echo "ERROR: File not found: $file_path"
+  echo "Please provide a valid file path."
+  # Loop back for retry
+fi
 
-**Store as:**
+# Validate file type
+if [[ ! "$file_path" =~ \.(png|jpg|jpeg|gif)$ ]]; then
+  echo "WARNING: File may not be an image"
+  echo "Supported: PNG, JPG, JPEG, GIF"
+  echo "Continue anyway? [y/n]:"
+fi
 ```
-EVIDENCE.screenshots = [
-  { path: "[path1]", description: "[optional description]" },
-  { path: "[path2]", description: "[optional description]" }
+
+**If valid:**
+```
+Collect description:
+
+What does this screenshot show?
+  Example: "Login form validation error displayed to user"
+
+Description:
+```
+
+**Store for attachment:**
+```
+MATERIAL_TO_ADD=[
+  source_path=/absolute/path/to/login-error.png
+  target_subfolder=screenshots
+  target_filename=login-error.png
+  description="Login form validation error displayed to user"
 ]
 ```
 
-### Type 2: Console / Browser Logs
-
-If user selected [2]:
+### Option 2: Log File
 
 ```
-Console / Browser Logs:
+Log File Evidence
+=================
 
-Option A: Provide file path
-Option B: Paste log content directly
+File types: LOG, TXT
 
-Choose [A/B]:
-> [User input]
+Enter file path:
+  Example: /var/log/app.log
+           or: ./logs/error.txt
+
+File path:
 ```
 
-**If Option A (file path):**
-```
-Enter log file path:
-> [User input]
-```
+**Validation:**
+```bash
+# Validate file exists and is readable
+if [[ ! -r "$file_path" ]]; then
+  echo "ERROR: File not found or not readable: $file_path"
+  echo "Please provide a valid file path."
+  # Loop back for retry
+fi
 
-**If Option B (paste content):**
-```
-Paste log content (type "END" on new line when done):
-> [User input - multiline until "END"]
-```
-
-**AI Log Analysis (inline evidence-summarizer logic):**
-
-Once logs are provided, analyze and extract key information:
-
-```
-Analyzing logs...
-
-Key findings:
-- [ERROR] [timestamp] [error message]
-- [FATAL] [timestamp] [fatal error]
-- Stack trace: [relevant trace lines]
-
-Noise filtered: [X] INFO/DEBUG lines ignored
-Errors found: [Y] ERROR/FATAL entries
+# Validate file type (optional warning)
+if [[ ! "$file_path" =~ \.(log|txt|out)$ ]]; then
+  echo "WARNING: File may not be a log file"
+  echo "Supported: LOG, TXT, OUT"
+  echo "Continue anyway? [y/n]:"
+fi
 ```
 
-**Store as:**
+**Collect timestamp info:**
 ```
-EVIDENCE.console_logs = {
-  source: "[file path or 'pasted']",
-  raw_content: "[full content]",
-  analyzed: {
-    errors: ["[error 1]", "[error 2]"],
-    stack_traces: ["[trace 1]"],
-    summary: "[AI-generated summary of key log findings]"
-  }
-}
+Log File Information:
+
+When was this log generated?
+  Example: "2025-12-08 14:30:00" or "This morning"
+
+Timestamp/Context:
 ```
 
-### Type 3: API Request / Response
-
-If user selected [3]:
-
+**Store for attachment:**
 ```
-API Request / Response:
-
-Option A: Provide file path (JSON, HAR, or text)
-Option B: Paste request/response directly
-
-Choose [A/B]:
-> [User input]
-```
-
-**If Option A:**
-```
-Enter API capture file path:
-> [User input]
-```
-
-**If Option B:**
-```
-Paste API details in this format (or paste raw cURL/response):
-
-Request:
-  Method: [GET/POST/PUT/DELETE]
-  URL: [endpoint]
-  Headers: [relevant headers]
-  Body: [request body if any]
-
-Response:
-  Status: [status code]
-  Body: [response body]
-
-Paste now (type "END" when done):
-> [User input - multiline until "END"]
-```
-
-**Store as:**
-```
-EVIDENCE.api_data = {
-  source: "[file path or 'pasted']",
-  request: {
-    method: "[method]",
-    url: "[url]",
-    headers: "[headers]",
-    body: "[body]"
-  },
-  response: {
-    status: "[status code]",
-    body: "[body]"
-  }
-}
-```
-
-### Type 4: Network Traces
-
-If user selected [4]:
-
-```
-Network Traces:
-
-Enter file path to HAR file, request IDs, or correlation IDs:
-> [User input]
-
-Additional trace notes (or "None"):
-> [User input]
-```
-
-**Store as:**
-```
-EVIDENCE.network_traces = {
-  file_path: "[path or N/A]",
-  request_ids: "[IDs if provided]",
-  correlation_ids: "[IDs if provided]",
-  notes: "[additional notes]"
-}
-```
-
-### Type 5: Error Messages
-
-If user selected [5]:
-
-```
-Error Messages:
-
-Paste the exact error message(s) displayed to the user or in logs.
-Type "END" on new line when done:
-
-> [User input - multiline until "END"]
-```
-
-**Store as:**
-```
-EVIDENCE.error_messages = [
-  "[Error message 1]",
-  "[Error message 2]"
+MATERIAL_TO_ADD=[
+  source_path=/var/log/app.log
+  target_subfolder=logs
+  target_filename=error-2025-12-08-14-30.log
+  description="Browser console errors during login attempt (2025-12-08 14:30)"
 ]
 ```
 
-### Type 6: Other Evidence
-
-If user selected [6]:
+### Option 3: Video Recording
 
 ```
-Other Evidence:
+Video Recording Evidence
+========================
 
-Describe the additional evidence:
-> [User input - description]
+File types: MP4, MOV, WebM, AVI
 
-File path (if applicable, or "None"):
-> [User input]
+Enter file path:
+  Example: /Users/name/videos/login-repro.mp4
+           or: ./videos/checkout-flow.mov
 
-Content (if pasting, type "END" when done, or "None"):
-> [User input]
+File path:
 ```
 
-**Store as:**
+**Validation:**
+```bash
+# Validate file exists
+if [[ ! -f "$file_path" ]]; then
+  echo "ERROR: File not found: $file_path"
+  # Loop back
+fi
+
+# Validate file type
+if [[ ! "$file_path" =~ \.(mp4|mov|webm|avi)$ ]]; then
+  echo "WARNING: File type may not be a video"
+  echo "Supported: MP4, MOV, WebM, AVI"
+  echo "Continue anyway? [y/n]:"
+fi
 ```
-EVIDENCE.other = {
-  description: "[description]",
-  file_path: "[path or None]",
-  content: "[content or None]"
-}
+
+**Collect description:**
+```
+What does this video demonstrate?
+  Example: "Complete repro steps: login → email error → submit → no feedback"
+
+Description:
+```
+
+**Store for attachment:**
+```
+MATERIAL_TO_ADD=[
+  source_path=/Users/name/videos/login-repro.mp4
+  target_subfolder=videos
+  target_filename=login-repro.mp4
+  description="Screen recording: login form validation error reproduction"
+]
+```
+
+### Option 4: Artifact (HAR, JSON, SQL, configs)
+
+```
+Artifact Evidence
+=================
+
+File types: HAR, JSON, SQL, XML, CSV, Config dumps
+
+Enter file path:
+  Example: /Users/name/traces/network-error.har
+           or: ./artifacts/request-payload.json
+
+File path:
+```
+
+**Collect artifact type:**
+```
+What type of artifact?
+  [1] Network Trace (HAR file)
+  [2] API Payload (JSON)
+  [3] Database Query (SQL)
+  [4] Configuration (Config, XML)
+  [5] Other (CSV, dump, etc.)
+
+Select [1-5]:
+```
+
+**Store for attachment:**
+```
+MATERIAL_TO_ADD=[
+  source_path=/Users/name/traces/network-error.har
+  target_subfolder=artifacts
+  target_filename=network-trace-login-failure.har
+  description="Network trace showing failed login API request with 401 response"
+]
 ```
 
 ---
 
-## Evidence Analysis (Inline Evidence-Summarizer Logic)
+## Step 3: Copy File to Bug Folder
 
-After collecting all evidence, perform analysis:
+After validating file:
 
-### Log Analysis Rules
+```bash
+# Create target path
+target_path="$BUG_FOLDER_PATH/$target_subfolder/$target_filename"
 
-**Filter noise:**
-- Ignore DEBUG, TRACE, INFO level entries unless relevant
-- Focus on ERROR, FATAL, WARN entries
-- Extract exception stack traces
+# Copy file (preserving original)
+cp "$source_path" "$target_path"
 
-**Key patterns to identify:**
-- Error codes and messages
-- Stack traces with line numbers
-- Timeout or connection errors
-- Authentication/authorization failures
-- Null pointer or undefined errors
-- Database errors (SQL exceptions, connection failures)
-
-### Root Cause Hypothesis Generation
-
-Based on evidence analysis, generate initial hypothesis:
-
+if [[ $? -eq 0 ]]; then
+  echo "✓ File copied to: $target_subfolder/$target_filename"
+else
+  echo "ERROR: Failed to copy file"
+  echo "Proceeding without this file."
+fi
 ```
-Evidence Analysis Complete
 
-Evidence Summary:
-- Screenshots: [count] files
-- Logs: [count] error entries found
-- API: [status code] response captured
-- Network: [traces captured or N/A]
-- Error messages: [count] messages
-
-Root Cause Hypothesis:
-[AI-generated hypothesis based on evidence patterns]
-
-Example hypotheses:
-- "API endpoint /checkout returns 500 due to unhandled null parameter"
-- "Frontend validation passes but backend rejects invalid date format"
-- "Session timeout occurs before request completion under slow network"
+**Organize files:**
+```
+Bug folder structure will be:
+  BUG-003-payment-timeout/
+  ├── bug-report.md
+  ├── screenshots/
+  │   ├── loading-spinner.png
+  │   └── timeout-message.png
+  ├── logs/
+  │   ├── browser-console-2025-12-08.log
+  │   └── network-request.txt
+  ├── videos/
+  │   └── repro-steps.mp4
+  └── artifacts/
+      ├── network-trace-failed.har
+      └── request-payload.json
 ```
 
 ---
 
-## Store Evidence Details
+## Step 4: Add More Materials or Continue
 
-Compile all evidence into EVIDENCE_DETAILS variable:
-
-```
-EVIDENCE_DETAILS={
-  screenshots: [...],
-  console_logs: {...},
-  api_data: {...},
-  network_traces: {...},
-  error_messages: [...],
-  other: {...},
-  analysis: {
-    error_summary: "[key errors found]",
-    root_cause_hypothesis: "[AI-generated hypothesis]"
-  }
-}
-```
-
-### Summary Display
+After each material is added:
 
 ```
-Evidence collected:
-- Screenshots: [count] files
-- Logs: [analyzed/not provided]
-- API data: [captured/not provided]
-- Network traces: [captured/not provided]
-- Error messages: [count] messages
+Evidence item added: screenshots/login-error.png
 
-Root cause hypothesis generated: [Yes/No]
+Would you like to add more evidence?
+  [1] Add another screenshot
+  [2] Add a log file
+  [3] Add a video
+  [4] Add an artifact
+  [5] I'm done collecting evidence
 
-Proceeding to Phase 3: Classify Severity
+Select [1-5]:
 ```
 
-### Set Variables for Next Phase
+**Track all materials for Attachments section:**
 
-Pass to Phase 3:
 ```
-FEATURE_NAME=[feature-name]
-TICKET_ID=[ticket-id]
-TICKET_PATH=[path]
-BUG_ID=[bug-id]
-BUG_PATH=[path]
-BUG_DETAILS=[details object]
-EVIDENCE_DETAILS=[evidence object]
-PRESET_SEVERITY=[severity if provided, else null]
+Materials collected:
+  - screenshots/login-error.png - "Validation error"
+  - logs/browser-console-2025-12-08.log - "Error stack trace"
+  - videos/repro-steps.mp4 - "Reproduction steps"
 ```
 
-### Next Phase
+---
 
-Continue to Phase 3: Classify Severity
+## Step 5: No Materials Added
+
+If user selects "Done" without adding materials:
+
+```
+No evidence materials added.
+
+This is acceptable for bugs with clear text descriptions.
+However, supporting evidence helps with investigation.
+
+Would you like to:
+  [1] Add evidence now
+  [2] Continue without evidence (can add later with /revise-bug)
+
+Select [1-2]:
+```
+
+---
+
+## Set Variables for Next Phase
+
+Collect all materials:
+
+```
+Export variables:
+  MATERIALS=[
+    array of objects:
+    {
+      subfolder: "screenshots"
+      filename: "login-error.png"
+      description: "Validation error message"
+    },
+    {
+      subfolder: "logs"
+      filename: "browser-console-2025-12-08.log"
+      description: "JavaScript errors during submission"
+    },
+    ...
+  ]
+```
+
+---
+
+## Success Message
+
+```
+✓ Supporting materials collected:
+  - Screenshots: 2 files
+  - Logs: 1 file
+  - Videos: 1 file
+  - Artifacts: 2 files
+  Total: 6 evidence items
+
+✓ Files organized in subfolders:
+  - screenshots/
+  - logs/
+  - videos/
+  - artifacts/
+
+Proceeding to Phase 3: Severity Classification
+```
+
+---
+
+## If No Materials
+
+```
+✓ No supporting materials added
+
+You can add evidence later using:
+  /revise-bug BUG-003 --add-evidence
+
+Proceeding to Phase 3: Severity Classification
+```
+
+---
+
+*Organized supporting materials enable faster bug investigation and resolution.*

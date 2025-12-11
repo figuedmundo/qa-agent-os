@@ -32,6 +32,46 @@ QA Agent OS supports both **Gemini 3** (recommended) and **Claude Code** out of 
 | **Setup** | `.gemini/commands/` | `.claude/commands/` + `.claude/agents/` |
 | **Best For** | Complex QA workflows with large codebases | Enterprise multi-team coordination |
 
+### Bug Management
+
+QA Agent OS provides feature-level bug organization with auto-incremented IDs and organized supporting materials. Bugs are tracked at the feature level, enabling cross-ticket references and reducing duplication.
+
+**Quick Reference:**
+
+| Task | Command | Creates |
+|------|---------|---------|
+| Create a new bug | `/report-bug` | `features/[feature]/bugs/BUG-001-[title]/bug-report.md` |
+| Update existing bug | `/revise-bug` | Revisions log with version tracking |
+| View bug folder structure | See guide below | N/A |
+
+**Folder Structure:**
+```
+features/[feature-name]/
+├── bugs/
+│   ├── BUG-001-checkout-fails/
+│   │   ├── bug-report.md
+│   │   ├── screenshots/
+│   │   ├── logs/
+│   │   ├── videos/
+│   │   └── artifacts/
+│   └── BUG-002-currency-error/
+│       ├── bug-report.md
+│       └── screenshots/
+├── feature-knowledge.md
+├── feature-test-strategy.md
+└── [TICKET-001]/
+    └── test-plan.md
+```
+
+**Key Features:**
+- Auto-incremented bug IDs per feature (BUG-001, BUG-002, etc.)
+- Semantic evidence organization (screenshots/, logs/, videos/, artifacts/)
+- Cross-ticket references via Ticket field
+- Full revision history with version tracking
+- Optional Jira ID integration
+
+For comprehensive guidance, see: **[Bug Folder Structure User Guide](agent-os/specifications/bug-folder-structure-user-guide.md)**
+
 ### Documentation & Installation
 
 - **[QA-QUICKSTART.md](QA-QUICKSTART.md)** - Get started with the 5-command QA workflow

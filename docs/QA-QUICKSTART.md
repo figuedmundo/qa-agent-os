@@ -67,7 +67,53 @@ features/user-authentication/AUTH-125/
 └── test-cases.md (if generated) - detailed executable test cases
 ```
 
-### Step 3: Generate Test Cases (if needed)
+### Step 3: Report Bugs During Testing
+
+As you test, report bugs found at the feature level:
+
+```bash
+cd features/user-authentication/
+/report-bug
+```
+
+This command:
+1. Auto-detects the feature context
+2. Generates the next sequential bug ID (BUG-001, BUG-002, etc.)
+3. Collects bug details (title, description, environment, severity)
+4. Organizes evidence (screenshots, logs, videos) into semantic subfolders
+5. Creates comprehensive `bug-report.md` with all details
+
+**Files Created:**
+```
+features/user-authentication/bugs/
+├── BUG-001-login-button-unresponsive/
+│   ├── bug-report.md
+│   ├── screenshots/
+│   │   ├── button-state.png
+│   │   └── error-message.png
+│   ├── logs/
+│   │   └── console.log
+│   └── artifacts/
+├── BUG-002-session-timeout-incorrect/
+│   ├── bug-report.md
+│   └── screenshots/
+```
+
+### Step 4: Update Bugs During Review
+
+If you need to add more evidence or update bug status:
+
+```bash
+/revise-bug
+```
+
+This command:
+1. Discovers all bugs in the feature
+2. Shows an interactive selection menu
+3. Lets you choose revision type: add evidence, change severity, update status, add notes, update ticket reference
+4. Updates bug-report.md and maintains full revision history
+
+### Step 5: Generate Test Cases (if needed)
 
 If you chose to stop after test-plan in Step 2, generate cases later:
 
@@ -86,7 +132,7 @@ Or let it prompt for selection if you run it without parameters:
 - Append: Add new cases, keep existing
 - Cancel: Don't change anything
 
-### Step 4: Refine During Testing
+### Step 6: Refine During Testing
 
 As you execute tests and discover new edge cases or requirements:
 
@@ -103,7 +149,7 @@ Choose what you discovered:
 
 The command updates test-plan.md with a revision log entry and offers to regenerate test cases.
 
-### Step 5: Plan Additional Tickets
+### Step 7: Plan Additional Tickets
 
 For the second ticket in your feature:
 
@@ -120,9 +166,62 @@ The command will:
 
 This ensures your feature knowledge stays current!
 
+## Bug Reporting Workflow
+
+The bug reporting workflow allows you to track bugs at the feature level, enabling cross-ticket references and organized evidence.
+
+### Quick Reference
+
+| Task | Command | Location |
+|------|---------|----------|
+| Create bug | `/report-bug` | Run from feature directory |
+| Update bug | `/revise-bug` | Run from feature or bug directory |
+| View structure | `tree features/[feature]/bugs/` | Any directory |
+
+### Folder Structure Example
+
+```
+features/payment-gateway/
+├── bugs/
+│   ├── BUG-001-checkout-fails/
+│   │   ├── bug-report.md
+│   │   ├── screenshots/
+│   │   │   ├── form-state.png
+│   │   │   └── error-message.png
+│   │   ├── logs/
+│   │   │   └── transaction.log
+│   │   ├── videos/
+│   │   └── artifacts/
+│   │       └── network-trace.har
+│   └── BUG-002-currency-calculation/
+│       ├── bug-report.md
+│       └── screenshots/
+├── feature-knowledge.md
+├── feature-test-strategy.md
+└── PAY-101/
+    └── test-plan.md
+```
+
+### Bug Report Contents
+
+Each bug report contains:
+- **Status**: Current state (OPEN, IN_REVIEW, VERIFIED, RESOLVED, CLOSED)
+- **Bug Details**: ID, Title, Severity, Description, Environment
+- **Ticket Reference**: Optional field for linking to related tickets
+- **Evidence**: Organized screenshots, logs, videos, artifacts
+- **Revision Log**: Version history with all updates
+
+### Key Features
+
+- **Auto-Increment IDs**: BUG-001, BUG-002, etc. per feature
+- **Evidence Organization**: Semantic subfolders (screenshots/, logs/, videos/, artifacts/)
+- **Cross-Ticket Support**: Reference multiple tickets if bug affects them
+- **Version Tracking**: Full revision history with timestamps
+- **Jira Integration**: Optional Jira ID field for external tracking
+
 ## Folder Structure Example
 
-After planning a feature with 2 tickets, you'll have:
+After planning a feature with 2 tickets and bugs, you'll have:
 
 ```
 features/
@@ -136,6 +235,14 @@ features/
     │   └── COLLECTION_LOG.md
     ├── feature-knowledge.md
     ├── feature-test-strategy.md
+    ├── bugs/
+    │   ├── BUG-001-login-button-unresponsive/
+    │   │   ├── bug-report.md
+    │   │   └── screenshots/
+    │   └── BUG-002-session-cookie-error/
+    │       ├── bug-report.md
+    │       ├── screenshots/
+    │       └── logs/
     ├── AUTH-125/
     │   ├── documentation/
     │   │   ├── jira-export.md
@@ -209,6 +316,66 @@ features/
 - documentation/ with visuals/ subdirectory
 - test-plan.md (consolidates requirements for THIS ticket)
 - test-cases.md (if option 1 selected)
+
+### /report-bug [optional-feature-name]
+
+**Purpose:** Create a new bug at the feature level with auto-incremented ID
+
+**Usage:**
+```bash
+# From feature directory (auto-detects feature)
+cd features/user-authentication/
+/report-bug
+
+# With explicit feature name
+/report-bug user-authentication
+
+# Prompts for selection if context unclear
+/report-bug
+```
+
+**Workflow:**
+1. Auto-detects or accepts feature context
+2. Generates next sequential bug ID
+3. Collects bug details (title, description, environment, severity)
+4. Organizes evidence by type into subfolders
+5. Generates bug-report.md with all information
+
+**Creates:**
+- `features/[feature]/bugs/BUG-XXX-[title]/bug-report.md`
+- Subfolders: screenshots/, logs/, videos/, artifacts/
+
+### /revise-bug [optional-bug-id]
+
+**Purpose:** Update an existing bug with revisions and evidence
+
+**Usage:**
+```bash
+# From feature directory (discovers and selects bug)
+cd features/user-authentication/
+/revise-bug
+
+# With explicit bug ID
+/revise-bug BUG-001
+
+# From bug directory (auto-detects)
+cd features/user-authentication/bugs/BUG-001-login-fails/
+/revise-bug
+```
+
+**Revision Types:**
+- [1] Add/update evidence (screenshots, logs, videos, artifacts)
+- [2] Change severity (CRITICAL, HIGH, MEDIUM, LOW)
+- [3] Change status (OPEN, IN_REVIEW, VERIFIED, RESOLVED, CLOSED)
+- [4] Add/update notes (description or environment details)
+- [5] Update ticket reference (link to related tickets)
+- [6] Update Jira ID (external tracking)
+- [7] View revision history
+
+**Updates:**
+- Modifies bug-report.md sections
+- Maintains full revision log with version increment
+- Tracks all changes with timestamps
 
 ### /generate-testcases [ticket-id]
 
@@ -287,11 +454,42 @@ features/
 # Step 6: Choose to generate test-cases.md now or later
 ```
 
-### Scenario 2: Discovered New Edge Case During Testing
+### Scenario 2: Discovered New Bug During Testing
 
 ```bash
 # You're testing AUTH-125 and find a bug
-# You realize this is a new edge case, not in test-plan.md
+cd features/user-authentication/
+
+# Create the bug
+/report-bug
+# Answer: Title: "Login button unresponsive"
+# Answer: Description: "The login button does not respond to clicks"
+# Answer: Environment: "Chrome 120, Windows 11"
+# Answer: Severity: "HIGH"
+# Add evidence: screenshot of button state, console logs
+
+# Bug created: features/user-authentication/bugs/BUG-001-login-button-unresponsive/
+```
+
+### Scenario 3: Add More Evidence to Bug
+
+```bash
+# You've found additional logs related to BUG-001
+cd features/user-authentication/
+
+# Update the bug
+/revise-bug
+# Select: BUG-001-login-button-unresponsive
+# Choose: [1] Add/update evidence
+# Add: New log file from server
+# New file organized into: bugs/BUG-001-login-button-unresponsive/logs/
+```
+
+### Scenario 4: Discovered New Edge Case During Testing
+
+```bash
+# You're testing AUTH-125 and find a new edge case
+# You realize this is a new scenario, not in test-plan.md
 
 /revise-test-plan AUTH-125
 # Choose: [1] New edge case found
@@ -300,7 +498,7 @@ features/
 # Now test-cases.md includes tests for this edge case
 ```
 
-### Scenario 3: Second Ticket Reveals New API Endpoint
+### Scenario 5: Second Ticket Reveals New API Endpoint
 
 ```bash
 # First ticket: AUTH-125 - Basic login
@@ -317,7 +515,7 @@ features/
 # System updates feature-knowledge.md with new API section
 ```
 
-### Scenario 4: Need to Review Plan Before Generating Cases
+### Scenario 6: Need to Review Plan Before Generating Cases
 
 ```bash
 # Create ticket planning
@@ -438,6 +636,44 @@ features/
 [Version log with changes over time]
 ```
 
+### bug-report.md Structure
+
+```markdown
+# Bug Report: BUG-XXX - [Title]
+
+## Status
+- Current: [OPEN|IN_REVIEW|VERIFIED|RESOLVED|CLOSED]
+- Last Updated: [date]
+
+## Bug Details
+- ID: BUG-XXX
+- Title: [Title]
+- Severity: [CRITICAL|HIGH|MEDIUM|LOW]
+- Description: [Full description]
+- Environment: [Browser, OS, etc.]
+- Ticket: [Optional: TICKET-001, TICKET-002]
+- Jira_ID: [Optional: JIRA-123]
+
+## Evidence
+### Screenshots
+[List of screenshot files]
+
+### Logs
+[List of log files]
+
+### Videos
+[List of video files]
+
+### Artifacts
+[List of other supporting materials]
+
+## Revision Log
+| Version | Date | Change | Type |
+|---------|------|--------|------|
+| 1.0 | 2025-12-10 | Initial report | CREATED |
+| 1.1 | 2025-12-10 | Added console logs | EVIDENCE |
+```
+
 ### test-cases.md Structure
 
 ```markdown
@@ -478,6 +714,8 @@ features/
 4. **Keep documentation updated** - Gap detection helps feature-knowledge.md stay current
 5. **Reuse test data** - Define data in test-plan.md section 7, reference in test-cases.md
 6. **Link to requirements** - Use requirement IDs consistently across plan and cases
+7. **Report bugs at feature level** - Use /report-bug to organize bugs per feature
+8. **Update bugs with evidence** - Use /revise-bug to add screenshots, logs, videos as you find them
 
 ## Troubleshooting
 
@@ -501,12 +739,21 @@ features/
 
 **Solution:** Run `/plan-ticket` on the same ticket ID and choose option [1] Full re-plan
 
+### Cannot find the bug I created
+
+**Solution:** Bugs are stored at feature level: `features/[feature-name]/bugs/BUG-XXX-[title]/`
+
+### "Ambiguous feature context" when running /report-bug
+
+**Solution:** Either navigate to the feature directory first, or provide the feature name: `/report-bug user-authentication`
+
 ## Next Steps
 
 1. Read the detailed command specifications in `agent-os/specs/2025-11-20-qa-workflow-redesign/spec.md`
-2. Review the command source files in `profiles/default/commands/plan-feature/`, `plan-ticket/`, etc.
+2. Review the command source files in `profiles/default/commands/plan-feature/`, `plan-ticket/`, `report-bug/`, etc.
 3. Check out the templates in `qa-agent-os/templates/` for formatting and structure
 4. Review existing features in `qa-agent-os/features/` to see examples
+5. Read the [Bug Folder Structure User Guide](agent-os/specifications/bug-folder-structure-user-guide.md) for detailed bug management guidance
 
 ## Getting Help
 
@@ -514,3 +761,4 @@ features/
 - Check the command help within each command for detailed options
 - Review spec.md for comprehensive specifications
 - Look at templates to understand expected document structure
+- Consult the bug management guide for detailed bug reporting workflows

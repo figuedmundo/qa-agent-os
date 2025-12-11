@@ -3,6 +3,171 @@
 Get notified of major releases by subscribing here:
 https://medirect.com/qa-agent-os
 
+## [0.8.0] - 2025-12-10
+
+### Feature-Level Bug Organization - Auto-Incremented Bug IDs and Organized Evidence
+
+This release reorganizes bug management from ticket-level to feature-level with stable auto-incremented bug IDs, organized supporting materials, and enhanced /report-bug and /revise-bug commands.
+
+#### Key Features
+
+**Feature-Level Bug Storage:**
+- Bugs now organized at feature level instead of ticket level
+- Directory structure: `qa-agent-os/features/[feature-name]/bugs/BUG-XXX-[title]/`
+- Auto-incremented bug IDs per feature (BUG-001, BUG-002, etc.)
+- Stable folder names for consistent cross-referencing
+
+**Organized Supporting Materials:**
+- Evidence organized into semantic subfolders: `screenshots/`, `logs/`, `videos/`, `artifacts/`
+- Automatic evidence categorization during bug creation
+- Clear separation of concerns for multiple types of evidence
+
+**Updated Commands:**
+
+1. **`/report-bug` - Enhanced for Feature-Level Bugs**
+   - Auto-detects feature context from working directory
+   - Auto-generates sequential bug IDs per feature
+   - Collects bug details: title, description, environment, severity
+   - Organizes evidence by type into subfolders
+   - Generates comprehensive `bug-report.md` with attachments section
+   - Supports optional Ticket field for cross-referencing related tickets
+   - Optional Jira ID field for tracking in external systems
+
+2. **`/revise-bug` - New Command for Updating Bugs**
+   - Discovers all bugs in feature
+   - Interactive selection menu with bug summaries
+   - Seven revision types: add/update evidence, change severity, change status, add/update notes, update ticket reference, update Jira ID
+   - Maintains full revision log with version tracking
+   - Metadata tracking for traceability (date, change type, description)
+   - Supports evidence organization for newly added materials
+
+**Integration with Existing Workflow:**
+- Feature-level bugs complement ticket-level testing
+- Bugs can reference multiple tickets via Ticket field
+- Bidirectional traceability: bugs to tickets and back
+- No disruption to existing ticket-level test plans and test cases
+- Works seamlessly with /start-feature and /plan-ticket commands
+
+**Bug Report Template (bug-report.md):**
+```markdown
+# Bug Report: BUG-XXX - [Title]
+
+## Status
+- Current: [OPEN|IN_REVIEW|VERIFIED|RESOLVED|CLOSED]
+- Last Updated: [date]
+
+## Bug Details
+- ID: BUG-XXX
+- Title: [Title]
+- Severity: [CRITICAL|HIGH|MEDIUM|LOW]
+- Description: [Full description of the bug]
+- Environment: [Where bug occurred]
+- Ticket: [Optional ticket reference, can be comma-separated for multiple tickets]
+- Jira_ID: [Optional Jira ticket ID]
+
+## Evidence
+[Organized supporting materials with semantic subfolders]
+
+## Revision Log
+[Version history with change tracking]
+```
+
+#### Architecture
+
+**Folder Structure Example:**
+```
+features/payment-gateway/
+├── bugs/
+│   ├── BUG-001-checkout-submit-fails/
+│   │   ├── bug-report.md
+│   │   ├── screenshots/
+│   │   │   ├── error-screen.png
+│   │   │   └── form-state.png
+│   │   ├── logs/
+│   │   │   └── transaction.log
+│   │   ├── videos/
+│   │   └── artifacts/
+│   │       └── network-trace.har
+│   └── BUG-002-currency-calculation-error/
+│       ├── bug-report.md
+│       ├── screenshots/
+│       └── logs/
+├── feature-knowledge.md
+├── feature-test-strategy.md
+└── [TICKET-001]/
+    ├── test-plan.md
+    └── test-cases.md
+```
+
+#### Breaking Changes
+
+**No Breaking Changes:** This release is forward-looking. Existing ticket-level bugs and test plans remain fully functional. New bug organization is optional and recommended for projects starting new features or reorganizing existing structures.
+
+#### Implementation Details
+
+**Commands Modified:**
+- `profiles/default/commands/report-bug/` - Enhanced with feature-level context detection
+- `profiles/default/commands/revise-bug/` - New command for bug revision management
+
+**Bash Utilities Created:**
+- `scripts/bug-id-utils.sh` - Auto-increment logic and ID validation
+- `scripts/bug-folder-utils.sh` - Folder structure creation and management
+- `scripts/bug-discovery.sh` - Bug discovery and selection
+- `scripts/bug-revisions.sh` - Revision type handlers and log management
+- `scripts/bug-report-generator.sh` - Report generation from workflow
+- `scripts/context-detection.sh` - Feature/bug context detection
+
+**Standards Updated:**
+- `profiles/default/standards/bugs/bug-reporting.md` - Updated for feature-level organization
+- `profiles/default/templates/bug-report.md` - New template for bug reports
+
+**Documentation Created:**
+- `/agent-os/specifications/bug-folder-structure-user-guide.md` - Comprehensive user guide
+
+#### Testing
+
+**Comprehensive Testing Completed:**
+- Auto-increment logic validation with edge cases
+- Folder structure creation and organization
+- Context detection from various directories
+- Feature-level bug independence (no cross-feature collisions)
+- Ticket field cross-referencing (single and multiple tickets)
+- Bidirectional traceability between bugs and tickets
+- Evidence organization and attachment handling
+- Revision log tracking and version management
+
+#### Migration Guide
+
+**For Existing Projects:**
+1. Continue using ticket-level bugs if preferred
+2. New projects recommended to use feature-level organization
+3. Transition gradually: use feature-level bugs for new features, keep existing ticket-level bugs for established features
+4. Run `/report-bug` from feature directory to use new auto-increment system
+
+**For New Projects:**
+1. Use `/start-feature` to create feature structure
+2. Use `/report-bug` from feature directory to track bugs at feature level
+3. Use `/revise-bug` to manage bug lifecycle
+4. Reference tickets in Ticket field when bugs affect specific tickets
+
+#### Benefits
+
+✅ **Better Organization:** Feature-level bugs reduce duplication
+✅ **Stable References:** Auto-incremented IDs enable consistent cross-referencing
+✅ **Clear Evidence:** Organized materials with semantic subfolders
+✅ **Full Traceability:** Revision logs track all changes with timestamps
+✅ **Flexible Scope:** Single bugs can reference multiple tickets
+✅ **Seamless Integration:** Works alongside existing ticket-level testing
+✅ **Forward-Looking:** No migration required for existing structures
+
+#### Related Specification
+
+- Spec: `agent-os/specs/2025-12-08-bug-folder-structure/`
+- Tasks: `agent-os/specs/2025-12-08-bug-folder-structure/tasks.md`
+- User Guide: `/agent-os/specifications/bug-folder-structure-user-guide.md`
+
+---
+
 ## [0.7.0] - 2025-12-08
 
 ### QA Workflow Command Separation - Modular Command Architecture
@@ -344,3 +509,4 @@ This release significantly reduces file clutter in ticket planning by eliminatin
 - Added status icons: ✅ Complete, 🔄 In Progress, ⏳ Not Started, ⚠️ Blocked
 - **NEW Section 12: Gap Detection Log** - Tracks gap analysis, feature knowledge updates, and traceability
 - Updated from 11 sections to 12 sections
+

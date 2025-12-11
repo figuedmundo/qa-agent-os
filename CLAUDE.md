@@ -57,6 +57,8 @@ The content layer containing:
 - `generate-testcases/` — Generate or regenerate test cases from test-plan.md
 - `revise-test-plan/` — Update test plans during testing with revision tracking
 - `update-feature-knowledge/` — Manually update feature knowledge (rare)
+- `report-bug/` — Create feature-level bugs with auto-incremented IDs
+- `revise-bug/` — Update feature-level bugs with revision tracking
 - `improve-skills/` — Enhance AI agent capabilities (Claude Code Skills)
 - `integrations/` — Jira and Testmo integration commands
 
@@ -95,7 +97,7 @@ project/
 
 ## QA Workflow Commands
 
-The redesigned QA workflow provides 4 modular commands that separate concerns: structure initialization, documentation gathering, and analysis.
+The redesigned QA workflow provides modular commands that separate concerns: structure initialization, documentation gathering, analysis, bug management, and test case generation.
 
 ### `/start-feature` Command
 **Purpose:** Initialize feature folder structure only
@@ -253,6 +255,68 @@ Would you like me to append these gaps to feature-knowledge.md?
 - [4] Add edge case documentation
 - [5] Add open question
 
+### `/report-bug` Command
+**Purpose:** Create a new feature-level bug with auto-incremented ID and organized evidence
+
+**Smart Context Detection:**
+- Auto-detects feature context from directory path
+- Scans feature for existing bugs to determine next bug ID
+- Falls back to interactive selection if context unclear
+
+**Workflow:**
+1. Detects or accepts feature context
+2. Generates next sequential bug ID (BUG-001, BUG-002, etc.)
+3. Collects bug details: title, description, environment, severity
+4. Organizes evidence by type into subfolders (screenshots/, logs/, videos/, artifacts/)
+5. Creates feature-level `bug-report.md` with all information
+
+**Usage:** `/report-bug` (run from feature directory)
+
+**Creates:**
+```
+features/[feature-name]/bugs/BUG-XXX-[title]/
+├── bug-report.md
+├── screenshots/
+├── logs/
+├── videos/
+└── artifacts/
+```
+
+**Bug Report Template:**
+Follows `@qa-agent-os/standards/bugs/bug-reporting.md` standard with:
+- Status tracking (OPEN, IN_REVIEW, VERIFIED, RESOLVED, CLOSED)
+- Bug details (ID, title, severity, description, environment)
+- Ticket field for cross-referencing (optional, can reference multiple tickets)
+- Jira ID field for external tracking (optional)
+- Evidence section with organized subfolders
+- Revision log for version tracking
+
+### `/revise-bug` Command
+**Purpose:** Update feature-level bugs with revisions and evidence management
+
+**Smart Context Detection:**
+- Auto-detects feature context from directory path
+- Discovers all bugs in feature
+- Interactive selection menu with bug summaries
+- Falls back to explicit bug ID if provided
+
+**Revision Types:**
+- [1] Add/update evidence (screenshots, logs, videos, artifacts)
+- [2] Change severity (CRITICAL, HIGH, MEDIUM, LOW)
+- [3] Change status (OPEN, IN_REVIEW, VERIFIED, RESOLVED, CLOSED)
+- [4] Add/update notes (description or environment details)
+- [5] Update ticket reference (link to related tickets)
+- [6] Update Jira ID (external tracking)
+- [7] View revision history
+
+**Features:**
+- Updates bug-report.md sections based on revision type
+- Maintains full revision log with version increment
+- Tracks all changes with timestamps and metadata
+- Organizes newly added evidence into semantic subfolders
+
+**Usage:** `/revise-bug` (run from feature or bug directory)
+
 ## QA Workflow Patterns
 
 ### Workflow Separation: User-Driven vs AI-Driven Tasks
@@ -266,6 +330,8 @@ Would you like me to append these gaps to feature-knowledge.md?
 - `/analyze-requirements` - Analyze documentation and create documents
 - `/generate-testcases` - Generate test cases
 - `/revise-test-plan` - Update plans during testing
+- `/report-bug` - Create bugs with auto-generated IDs
+- `/revise-bug` - Update bugs with revision tracking
 
 ### Feature-Level Documentation
 Feature-level documents capture the "WHAT" and strategic "HOW" once:
@@ -295,6 +361,34 @@ Ticket-level documents capture specific test planning:
   - Can be regenerated as plan evolves
   - Created by `/generate-testcases`
 
+### Feature-Level Bug Organization
+Feature-level bugs enable cross-ticket bug tracking and evidence organization:
+
+- **Bug ID Scoping**
+  - Auto-incremented per feature (BUG-001, BUG-002, etc.)
+  - Stable folder names for consistent cross-referencing
+  - Independent numbering per feature (no cross-feature collisions)
+
+- **bug-report.md** (1 per bug)
+  - Contains bug details: ID, title, severity, description, environment
+  - Status tracking through revision log
+  - Ticket field for cross-referencing related tickets (optional, comma-separated)
+  - Jira ID field for external system integration (optional)
+  - Evidence section with organized subfolders
+  - Full revision history with version tracking
+
+- **Evidence Organization**
+  - Semantic subfolders: screenshots/, logs/, videos/, artifacts/
+  - Evidence automatically categorized during bug creation
+  - New evidence added via `/revise-bug` maintains organization
+  - Clear separation of concerns for multiple evidence types
+
+- **Bidirectional Traceability**
+  - Bugs can reference multiple tickets via Ticket field
+  - Tickets reference bugs in test-cases.md Defects field
+  - Version history tracks all changes with timestamps
+  - Metadata tracking (date, change type, description)
+
 ### Gap Detection Pattern
 The intelligent requirement analysis in `/analyze-requirements` ticket context:
 
@@ -305,6 +399,19 @@ The intelligent requirement analysis in `/analyze-requirements` ticket context:
 5. If gaps found, prompts user to append to feature-knowledge.md
 6. Appends with metadata for traceability (source ticket-id, timestamp)
 7. Ensures feature knowledge stays current without manual effort
+
+### Bug Management Pattern
+The feature-level bug organization with `/report-bug` and `/revise-bug` commands:
+
+1. Bugs stored at feature level: `features/[feature]/bugs/BUG-XXX-[title]/`
+2. Auto-incremented IDs per feature prevent cross-feature collisions
+3. Evidence organized semantically (screenshots/, logs/, videos/, artifacts/)
+4. Ticket field enables cross-ticket references for bugs affecting multiple tickets
+5. Revision log maintains full version history with timestamps
+6. Status workflow tracks bug lifecycle (OPEN → IN_REVIEW → VERIFIED → RESOLVED → CLOSED)
+7. Jira ID field supports external issue tracking integration
+8. Bug-report.md follows standardized structure from `@qa-agent-os/standards/bugs/bug-reporting.md`
+9. Commands use smart context detection for seamless workflow integration
 
 ## Data Flow
 
@@ -446,7 +553,7 @@ The project uses a feature branch approach. Key files frequently modified:
 - `profiles/default/` — All standard content, commands, and templates
 - `scripts/` — Installation and compilation logic
 
-Recent changes focused on implementing the QA Workflow Separation redesign with 4 modular commands that distinguish user-driven tasks from AI-driven tasks, with enhanced gap detection visibility.
+Recent changes focused on implementing the QA Workflow Separation redesign with modular commands and feature-level bug organization with auto-incremented IDs.
 
 ## Success Metrics for QA Workflow
 
@@ -455,7 +562,10 @@ The modular workflow improves QA efficiency:
 - **Separation of Concerns:** Structure, gathering, and analysis as separate commands
 - **Planning Efficiency:** Flexible re-execution without recreating structure
 - **Knowledge Currency:** Gap detection keeps feature-knowledge.md current
-- **Traceability:** 100% requirement → test case mapping with gap detection metadata
+- **Traceability:** 100% requirement → test case mapping with gap detection metadata and bug references
 - **Flexibility:** Stop/continue options, regeneration, revision tracking
 - **User Experience:** Smart context detection reduces user input, helpful errors guide users
 - **Explicit Gap Detection:** Users always see when gaps are detected and can make informed decisions
+- **Bug Management:** Feature-level organization with auto-incremented IDs and organized evidence
+- **Cross-Ticket References:** Bugs can reference multiple tickets for comprehensive tracking
+- **Evidence Organization:** Semantic subfolders maintain clear separation of supporting materials

@@ -136,7 +136,7 @@ get_all_repo_files() {
     print_verbose "Repository path: $repo_path"
 
     # Build API URL
-    local tree_url="https://api.github.com/repos/${repois_path}/git/trees/${branch}?recursive=true"
+    local tree_url="https://api.github.com/repos/${repo_path}/git/trees/${branch}?recursive=true"
 
     print_verbose "Fetching from: $tree_url"
 

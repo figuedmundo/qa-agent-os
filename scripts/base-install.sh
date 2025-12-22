@@ -153,13 +153,13 @@ get_all_repo_files() {
 
     if echo "$response" | grep -q '"message"'; then
         local error_msg=$(echo "$response" | grep -o '"message":"[^"]*"' | sed 's/"message":"//' | sed 's/"$//')
-        print_verbose "GitHub API error: $error_msg"
+        bootstrap_error "GitHub API error: $error_msg"
         return 1
     fi
 
     # Check if we have tree data (use grep -c to avoid broken pipe)
     if [[ $(echo "$response" | grep -c '"tree"' 2>/dev/null || true) -eq 0 ]]; then
-        print_verbose "No tree data in response"
+        bootstrap_error "No tree data in GitHub API response"
         return 1
     fi
 

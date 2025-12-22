@@ -101,6 +101,9 @@ EXCLUSIONS=(
     "agent-os/*"
     ".claude/*"
     "docs/*"
+    ".vibe/*"
+    "GEMINI.md"
+    "CLAUDE.md"
 )
 
 # Check if a file should be excluded
